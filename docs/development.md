@@ -47,3 +47,7 @@ node scripts/smoke-desktop.mjs
 桌面应用启动本机服务并自动打开默认浏览器。`PORT=0` 由操作系统分配端口。资料在 Electron 的应用数据目录下 `data/`，独立登录状态在 `account/`，与源码用户的 Codex 配置分开。
 
 首次启动检查使用临时空账户目录，验证没有安装组件时的演示、TXT 导入，以及导入 Word 时的缺少组件提示，不读取维护者的登录凭据，不发送 AI 生成请求。组件安装与自检单独验证，正式发布前还需人工核对安装和浏览器交互。
+
+## 仓库目录
+
+后端代码位于 `src/`，浏览器界面位于 `public/`，桌面入口位于 `desktop/`。辅助文档集中在 `docs/`，启动与构建脚本集中在 `scripts/`。在仓库根目录执行 `npm start`、`npm test` 和打包命令。直接启动可使用 `scripts/start.command`（macOS）、`scripts/start.bat`（Windows）或 `sh scripts/start.sh`。

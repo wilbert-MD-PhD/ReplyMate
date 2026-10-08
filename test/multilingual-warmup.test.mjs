@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Warmup} from '../warmup.mjs';
+import {Warmup} from '../src/warmup.mjs';
 import {normalize,hasQuestionContent,repeatedTranscript,transcriptDecision} from '../public/logic.mjs';
 import {createPreparedIndex,findPrepared} from '../public/prepared.mjs';
-import {retrieve} from '../core.mjs';
+import {retrieve} from '../src/core.mjs';
 import {resolveSpeech} from '../public/speech-pipeline.mjs';
 test('startup warming reports progress, deduplicates callers and retries failures',async()=>{const warm=new Warmup();await warm.run('a',[],{enabled:false,message:'等待登录'});assert.equal(warm.state.message,'等待登录');let release,calls=0;const wait=new Promise(r=>release=r),jobs=[{label:'fast',run:async()=>{calls++;await wait;}}];const a=warm.run('b',jobs),b=warm.run('b',jobs);assert.equal(warm.state.state,'warming');assert.equal(warm.state.completed,0);release();await Promise.all([a,b]);assert.equal(calls,1);assert.equal(warm.state.completed,1);assert.equal(warm.state.state,'ready');await warm.run('b',jobs);assert.equal(calls,1);await warm.run('c',[{label:'fail',run:async()=>{throw Error('offline');}}]);assert.equal(warm.state.state,'error');await warm.run('c',jobs);assert.equal(warm.state.state,'ready');});
 test('non-Latin questions retain meaning and cannot collide into an empty preset key',()=>{const texts=['研究结果是什么？','対象は何人ですか？','결과는 무엇입니까?','ما هي النتائج؟','परिणाम क्या हैं?','¿Cuáles son los resultados?'];for(const text of texts){assert.ok(normalize(text));assert.equal(repeatedTranscript(text),false);assert.equal(hasQuestionContent(text),true);assert.equal(transcriptDecision('',text).text,text);}const index=createPreparedIndex([{id:'a',question:'研究结果是什么？',reviewed:true,answer:'Results',sourceIds:['x']}]);assert.equal(findPrepared(index,'研究结果是什么').id,'a');assert.equal(findPrepared(index,'研究方法是什么'),null);assert.equal(findPrepared(index,'???'),null);assert.ok(retrieve('肌腱治疗结果',[{title:'肌腱治疗结果',text:'患者肌腱治疗结果得到改善。'}]).length);});

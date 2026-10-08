@@ -18,7 +18,7 @@ export async function parseImport(name, data, {parser}={}) {
   if (ext === '.md' || ext === '.txt') text = new TextDecoder('utf-8', {fatal:true}).decode(data);
   else {
     const id=ext==='.pdf'?'docs-pdf':'docs-office';
-    if(!parser){const {ComponentRequired}=await import('./components/runtime-resolver.mjs');throw new ComponentRequired(id);}
+    if(!parser){const {ComponentRequired}=await import('../components/runtime-resolver.mjs');throw new ComponentRequired(id);}
     text=await (await parser(id)).extract(data,ext);
     if (!text?.trim()) throw Error('未提取到文字。扫描件和图片请先识别文字后导入');
   }

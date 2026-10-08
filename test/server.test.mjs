@@ -11,7 +11,7 @@ const probe=net.createServer();await new Promise(r=>probe.listen(0,'127.0.0.1',r
 const origin='http://127.0.0.1:'+port;
 test('clean demo server: paired streams, session auth, private-file isolation and validation',async t=>{
  const dataDir=await mkdtemp(path.join(tmpdir(),'replymate-server-test-'));
- const child=spawn(process.execPath,['server.mjs'],{cwd:new URL('..',import.meta.url),env:{...process.env,PORT:String(port),QA_BACKEND:'demo',REPLYMATE_DATA_DIR:dataDir,QA_FAST_MODEL:'',QA_SECONDARY_MODEL:'',WHISPER_BIN:'',WHISPER_MODEL:''},stdio:['ignore','pipe','pipe']});
+ const child=spawn(process.execPath,['src/server.mjs'],{cwd:new URL('..',import.meta.url),env:{...process.env,PORT:String(port),QA_BACKEND:'demo',REPLYMATE_DATA_DIR:dataDir,QA_FAST_MODEL:'',QA_SECONDARY_MODEL:'',WHISPER_BIN:'',WHISPER_MODEL:''},stdio:['ignore','pipe','pipe']});
  let output='';child.stderr.on('data',d=>{output+=d;});child.stdout.on('data',()=>{});
  try{
   let status;

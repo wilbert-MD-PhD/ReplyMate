@@ -5,10 +5,10 @@ import {spawnSync} from 'node:child_process';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {compileText,validateLibrary,readLibrary} from '../library.mjs';
-import {selectExcerpts,readSSE} from '../core.mjs';
+import {compileText,validateLibrary,readLibrary} from '../src/library.mjs';
+import {selectExcerpts,readSSE} from '../src/core.mjs';
 import {createPreparedIndex,findPrepared} from '../public/prepared.mjs';
-import {selectEffort} from '../bridge.mjs';
+import {selectEffort} from '../src/bridge.mjs';
 const root=path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const example=await readLibrary(new URL('../examples/reference.json',import.meta.url));
 test('only exact reviewed questions select prepared answers',()=>{
@@ -40,7 +40,7 @@ test('UTF-8 streamed text survives fragmented bytes',async()=>{
 test('import CLI supports paths with spaces and backs up the previous library',async()=>{
  const temp=await mkdtemp(path.join(tmpdir(),'qa-import-'));
  try{
-  await cp(path.join(root,'library.mjs'),path.join(temp,'library.mjs'));
+  await cp(path.join(root,'src/library.mjs'),path.join(temp,'src/library.mjs'));
   await cp(path.join(root,'public'),path.join(temp,'public'),{recursive:true});
   await cp(path.join(root,'scripts'),path.join(temp,'scripts'),{recursive:true});
   const source=path.join(temp,'my notes.md');await writeFile(source,'# Example\n\nFirst unique text.');

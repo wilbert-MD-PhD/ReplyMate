@@ -1,6 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {QuestionStore,TranscriptBuffer,transcriptDecision,looksQuestion} from '../public/logic.mjs';
-import {validateWav} from '../asr.mjs';
+import {validateWav} from '../src/asr.mjs';
 test('second question queues without cancelling or changing first streaming answer',()=>{const s=new QuestionStore(),q1=s.add('first'),j1=s.next(),q2=s.add('second');assert.equal(s.selected,q1.id);assert.equal(s.next(),null);s.update(q1.id,j1.a.id,{text:'still first'});assert.equal(q2.attempts[0].text,'');s.finish(q1.id,j1.a.id);assert.equal(s.next().q.id,q2.id);assert.equal(q1.attempts[0].text,'still first');});
 test('reading hold and pinned navigation survive incoming and completed questions',()=>{const s=new QuestionStore(),q1=s.add('1'),q2=s.add('2');const j=s.next();s.finish(j.q.id,j.a.id);s.tick(100,6000);s.tick(6000,6000);assert.equal(s.selected,q1.id);s.tick(6101,6000);assert.equal(s.selected,q2.id);s.move(-1);s.add('3');s.tick(99999,0);assert.equal(s.selected,q1.id);assert.equal(s.follow,false);});
 test('regeneration preserves old answer and late deltas stay with their own attempt',()=>{const s=new QuestionStore(),q=s.add('original'),j=s.next();s.finish(q.id,j.a.id,{text:'old'});const retry=s.enqueue(q.id,'corrected',{corrected:true});s.update(q.id,j.a.id,{text:'old final'});assert.equal(retry.text,'');assert.equal(retry.question,'corrected');assert.equal(q.attempts.length,2);});

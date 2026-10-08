@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {selectAnswerModels} from '../model-policy.mjs';
+import {selectAnswerModels} from '../src/model-policy.mjs';
 const catalog=[{id:'gpt-6.1-sol',isDefault:true},{id:'gpt-6-astra'},{id:'gpt-6-sol'},{id:'gpt-6-luna'}];
 test('default fast lane races distinct models and reserves Astra for independent depth',()=>{
  const p=selectAnswerModels(catalog);

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {AnswerLanes} from '../public/answer-lanes.mjs';
 import {QuestionStore} from '../public/logic.mjs';
-import {CodexBridge} from '../bridge.mjs';
+import {CodexBridge} from '../src/bridge.mjs';
 const deferred=()=>{let resolve;const promise=new Promise(r=>resolve=r);return {promise,resolve};};
 
 test('slow deep answer does not block fast answers or translation; its own questions stay ordered',async()=>{

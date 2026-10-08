@@ -4,7 +4,7 @@ import {mkdtemp,readFile,readdir,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {zipSync,strToU8} from 'fflate';
-import {parseImport as parseImportCore,saveLibrary,maxImportBytes} from '../workspace.mjs';
+import {parseImport as parseImportCore,saveLibrary,maxImportBytes} from '../src/workspace.mjs';
 
 const parseImport=(name,data)=>parseImportCore(name,data,{parser:id=>import('../plugins/'+id+'/index.mjs')});
 const zip=files=>Buffer.from(zipSync(Object.fromEntries(Object.entries(files).map(([k,v])=>[k,strToU8(v)]))));

@@ -2,7 +2,7 @@ import {existsSync} from 'node:fs';
 import {loadEnvFile} from 'node:process';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
-export const root=path.dirname(fileURLToPath(import.meta.url));
+export const root=path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 if(existsSync(path.join(root,'.env')))loadEnvFile(path.join(root,'.env'));
 export const dataDir=process.env.REPLYMATE_DATA_DIR||path.join(root,'user-data');
 export const appDataDir=process.env.REPLYMATE_USER_DATA||dataDir;

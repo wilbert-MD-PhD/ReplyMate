@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {LocalASR} from '../asr.mjs';
+import {LocalASR} from '../src/asr.mjs';
 import {silenceWav} from '../components/self-test.mjs';
 const tick=()=>new Promise(r=>setImmediate(r));
 test('queued ASR cancellation removes work; cancelling active inference restarts before accepting more',async()=>{const asr=new LocalASR('.',[],{bin:'',model:''});await asr.ready;asr.state='ready';let inference=0,restarts=0;asr.launch=async()=>{restarts++;asr.state='ready';};asr.infer=async(job,short,signal)=>{inference++;return new Promise((resolve,reject)=>{signal.addEventListener('abort',()=>reject(signal.reason),{once:true});});};const first=new AbortController(),queued=new AbortController();const p=asr.transcribe(silenceWav(),'fast',{signal:first.signal});const caught=p.catch(e=>e);await tick();const q=asr.transcribe(silenceWav(),'fast',{signal:queued.signal});const caughtQ=q.catch(e=>e);await tick();assert.equal(asr.queue.length,1);queued.abort(Error('cancel queued'));await caughtQ;assert.equal(asr.queue.length,0);assert.equal(inference,1);first.abort(Error('cancel active'));await caught;await tick();assert.equal(restarts,1);assert.equal(asr.running,null);await asr.close();});

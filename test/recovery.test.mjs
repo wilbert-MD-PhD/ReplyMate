@@ -17,7 +17,7 @@ test('unique atomic writers leave complete JSON and no temporary files',async()=
 test('settings transactions, independent page sessions and process recovery',async t=>{
  const dir=await mkdtemp(path.join(tmpdir(),'replymate-recovery-')),log=path.join(dir,'rpc.jsonl');
  await writeFile(path.join(dir,'settings.json'),JSON.stringify({autoWarm:true}));
- const child=spawn(process.execPath,['--import',fixture.href,'server.mjs'],{cwd:new URL('..',import.meta.url),env:{...process.env,PORT:'0',QA_BACKEND:'auto',CODEX_BIN:'replymate-test-codex',REPLYMATE_TEST_CODEX:'replymate-test-codex',REPLYMATE_TEST_PID:path.join(dir,'codex.pid'),REPLYMATE_TEST_LOG:log,REPLYMATE_CODEX_HOME:path.join(dir,'account'),REPLYMATE_USER_DATA:dir,REPLYMATE_DATA_DIR:dir,REPLYMATE_DESKTOP:'0',WHISPER_BIN:'',WHISPER_MODEL:'',QA_FAST_MODEL:'',QA_SECONDARY_MODEL:''},stdio:['ignore','pipe','pipe']});
+ const child=spawn(process.execPath,['--import',fixture.href,'src/server.mjs'],{cwd:new URL('..',import.meta.url),env:{...process.env,PORT:'0',QA_BACKEND:'auto',CODEX_BIN:'replymate-test-codex',REPLYMATE_TEST_CODEX:'replymate-test-codex',REPLYMATE_TEST_PID:path.join(dir,'codex.pid'),REPLYMATE_TEST_LOG:log,REPLYMATE_CODEX_HOME:path.join(dir,'account'),REPLYMATE_USER_DATA:dir,REPLYMATE_DATA_DIR:dir,REPLYMATE_DESKTOP:'0',WHISPER_BIN:'',WHISPER_MODEL:'',QA_FAST_MODEL:'',QA_SECONDARY_MODEL:''},stdio:['ignore','pipe','pipe']});
  let origin='',errors='';child.stdout.on('data',d=>{origin=String(d).match(/http:\/\/127\.0\.0\.1:\d+/)?.[0]||origin;});child.stderr.on('data',d=>{errors+=d;});
  try{
   await until(()=>{if(child.exitCode!==null)throw Error(errors);return origin;});

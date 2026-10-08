@@ -41,7 +41,7 @@ else {
       tray.on('click',openApp);
       Menu.setApplicationMenu(Menu.buildFromTemplate([{label:'ReplyMate',submenu:[{label:'打开答伴',click:openApp},{type:'separator'},{label:'退出答伴',accelerator:'CmdOrCtrl+Q',click:stop}]}]));
     }
-    child = utilityProcess.fork(path.join(root,'server.mjs'),[],{
+    child = utilityProcess.fork(path.join(root,'src/server.mjs'),[],{
       cwd:app.getPath('userData'),stdio:'pipe',serviceName:'ReplyMate',
       env:{...process.env,PORT:'0',QA_BACKEND:'auto',QA_FAST_MODEL:'',QA_SECONDARY_MODEL:'',QA_FAST_EFFORT:'',QA_SECONDARY_EFFORT:'',CODEX_BIN:'',REPLYMATE_USER_DATA:app.getPath('userData'),REPLYMATE_DATA_DIR:dataDir,REPLYMATE_CODEX_HOME:codexHome,REPLYMATE_DESKTOP:'1'}
     });

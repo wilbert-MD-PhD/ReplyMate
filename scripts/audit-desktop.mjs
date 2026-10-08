@@ -6,5 +6,5 @@ const require=createRequire(import.meta.url),asar=require('@electron/asar'),root
 const folder=process.platform==='darwin'?`dist/desktop/mac${process.arch==='arm64'?'-arm64':''}/ReplyMate.app/Contents/Resources`:'dist/desktop/win-unpacked/resources';
 const archive=path.join(root,folder,'app.asar'),files=asar.listPackage(archive).map(name=>name.replaceAll('\\','/'));
 for(const name of files)if(/(?:node_modules|officeparser|tesseract|pdfjs-dist|smoke\.cjs|CODEX-LICENSE|\/codex\/bin)/.test(name))throw Error('Unexpected heavy/test content: '+name);
-for(const name of ['server.mjs','components/catalog.generated.json','public/components-ui.mjs'])if(!files.includes('/'+name))throw Error('Missing core file: '+name);
+for(const name of ['src/server.mjs','components/catalog.generated.json','public/components-ui.mjs'])if(!files.includes('/'+name))throw Error('Missing core file: '+name);
 const record={platform:process.platform+'-'+process.arch,coreAsarBytes:(await stat(archive)).size,fileCount:files.length,productionDependencies:JSON.parse(asar.extractFile(archive,'package.json').toString()).dependencies};await writeFile(path.join(root,'dist/desktop/core-audit-'+record.platform+'.json'),JSON.stringify(record,null,2)+'\n');console.log(record);

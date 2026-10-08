@@ -6,7 +6,7 @@ import {fileURLToPath} from 'node:url';
 import {loadCatalog} from '../components/catalog.mjs';
 import {ComponentManager} from '../components/manager.mjs';
 import {selfTest,silenceWav} from '../components/self-test.mjs';
-import {LocalASR} from '../asr.mjs';
+import {LocalASR} from '../src/asr.mjs';
 const root=path.dirname(path.dirname(fileURLToPath(import.meta.url))),catalog=await loadCatalog(),dir=path.join(root,'dist/qa/component-data');await mkdir(dir,{recursive:true});const manager=await new ComponentManager(dir,catalog,{selfTest}).init();
 process.on('SIGINT',()=>{manager.close();process.exitCode=130;});
 const report={platform:process.platform+'-'+process.arch,started:new Date().toISOString(),components:[],models:[],qualityScope:'Public English JFK sample plus silence; no real microphone or language-quality validation.'};

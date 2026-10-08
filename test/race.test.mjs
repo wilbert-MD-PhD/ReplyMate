@@ -1,4 +1,4 @@
-import test from 'node:test';import assert from 'node:assert/strict';import {CodexBridge} from '../bridge.mjs';
+import test from 'node:test';import assert from 'node:assert/strict';import {CodexBridge} from '../src/bridge.mjs';
 function fake(answer){const b=Object.create(CodexBridge.prototype);b.models=[{id:'fast-model'},{id:'review-model'}];b.raceModels=['fast-model','review-model'];b.answer=answer;return b;}
 test('race forwards only the first responder and cancels the other',async()=>{
  let cancelled=false;

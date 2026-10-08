@@ -4,7 +4,7 @@
 
 See a quick answer first while an independent deep answer develops. ReplyMate supports speech input, Chinese question translations and session history. The interface is in Chinese; answers currently default to English.
 
-[Download v2.5.3](#download) · [Quick start](#quick-start) · [中文说明](README.md) · [Release notes](https://github.com/wilbert-MD-PhD/ReplyMate/releases/tag/v2.5.3)
+[Download v2.5.3](#download) · [Quick start](#quick-start) · [中文说明](../README.md) · [Release notes](https://github.com/wilbert-MD-PhD/ReplyMate/releases/tag/v2.5.3)
 
 Version 2.5.3 fixes AI reconnection, concurrent settings updates and per-page session isolation. Reconnecting preserves the current page history.
 
@@ -18,7 +18,7 @@ Version 2.5.3 fixes AI reconnection, concurrent settings updates and per-page se
 
 The links above download the core app; see the release page for exact sizes. AI, document parsing and local speech components download separately when you install them. The app shows each download size. [All releases and older installers](https://github.com/wilbert-MD-PhD/ReplyMate/releases).
 
-![ReplyMate v2.5.0: question input on the left, with a Chinese question translation and separate quick and deep answers on the right](docs/images/replymate-v2.5.0-demo.jpg)
+![ReplyMate v2.5.0: question input on the left, with a Chinese question translation and separate quick and deep answers on the right](images/replymate-v2.5.0-demo.jpg)
 
 *Actual interface using the bundled fictional material and offline demo. The answers and timings shown are not real AI generation or performance results.*
 
@@ -48,7 +48,7 @@ The links above download the core app; see the release page for exact sizes. AI,
 The component center supports pause, resume, repair, uninstall and manual import. The recommended Turbo multilingual model is about 574 MB, with the engine installed separately. Smaller models are also available. Switching recognition languages within one multilingual model does not require another download.
 
 - **Quick and deep answers start together.** The quick lane races two available models by default. The deep model runs independently, so a slower deep answer does not block the next question.
-- **Three-second first-text target.** The target is the first quick-answer character within three seconds of submission. Actual latency is shown per question. The current release's real-account success rate is still unverified; demo and prepared answers do not count as AI results. [Measurement scope and historical results](docs/latency-benchmark.md).
+- **Three-second first-text target.** The target is the first quick-answer character within three seconds of submission. Actual latency is shown per question. The current release's real-account success rate is still unverified; demo and prepared answers do not count as AI results. [Measurement scope and historical results](latency-benchmark.md).
 - **Multilingual input.** Select a speech recognition language separately from the answer language, which currently defaults to English. Multilingual speech models use your selected language; English-only models support English only. Recognition quality still needs validation for each language.
 - **History and retries.** Revisit questions from the current session, edit and retry a question, retry only the deep answer, or use prepared answers you have checked.
 
@@ -71,7 +71,7 @@ Only readable text is extracted. OCR, chart interpretation and formula interpret
 
 **Can I import several documents? What happens when I replace material?**
 
-Import one file at a time, up to 20 MB. Replacing material backs up the previous library and clears the current page's Q&A. Copy any answers you need first. Document imports also clear the sample prepared answers. See [formats, limits and prepared answers](docs/library-format.md).
+Import one file at a time, up to 20 MB. Replacing material backs up the previous library and clears the current page's Q&A. Copy any answers you need first. Document imports also clear the sample prepared answers. See [formats, limits and prepared answers](library-format.md).
 
 **Can a Chinese question retrieve English reference excerpts?**
 
@@ -98,8 +98,8 @@ npm ci --ignore-scripts
 npm start
 ```
 
-Open [http://127.0.0.1:8780](http://127.0.0.1:8780) for the offline demo. See [development notes](docs/development.md) and [component development](docs/components.md) for source AI configuration, model policy, testing and packaging. The source branch may include changes not yet shipped in installers; see the [source changelog](CHANGELOG.md).
+Open [http://127.0.0.1:8780](http://127.0.0.1:8780) for the offline demo. See [development notes](development.md) and [component development](components.md) for source AI configuration, model policy, testing and packaging. The source branch may include changes not yet shipped in installers; see the [source changelog](CHANGELOG.md).
 
-[Release notes](docs/release-v2.5.0.md) · [Validation scope](docs/validation.md) · [Report an issue](https://github.com/wilbert-MD-PhD/ReplyMate/issues)
+[Release notes](release-v2.5.0.md) · [Validation scope](validation.md) · [Report an issue](https://github.com/wilbert-MD-PhD/ReplyMate/issues)
 
-[MIT licensed](LICENSE). Bundled and separately installed components retain their own licenses; see [third-party notices](THIRD_PARTY_NOTICES.md).
+[MIT licensed](../LICENSE). Bundled and separately installed components retain their own licenses; see [third-party notices](THIRD_PARTY_NOTICES.md).

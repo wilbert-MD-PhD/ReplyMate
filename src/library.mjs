@@ -1,6 +1,6 @@
 import {readFile,stat} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
-import {createPreparedIndex} from './public/prepared.mjs';
+import {createPreparedIndex} from '../public/prepared.mjs';
 export function validateLibrary(r){
  const fail=message=>{throw Error('Invalid library: '+message);};
  if(!r||typeof r!=='object'||Array.isArray(r))fail('object required');

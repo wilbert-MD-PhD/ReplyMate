@@ -1,7 +1,7 @@
 import {readFile,mkdir,writeFile,rename,stat} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {compileText,readLibrary} from '../library.mjs';
+import {compileText,readLibrary} from '../src/library.mjs';
 const root=path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 try{
  const input=process.argv[2];if(!input)throw Error('Usage: npm run import -- path/to/notes.md (or a library JSON)');

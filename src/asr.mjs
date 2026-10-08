@@ -5,8 +5,8 @@ import path from 'node:path';
 import net from 'node:net';
 import {config} from './config.mjs';
 import {randomBytes} from 'node:crypto';
-import {speechBudget} from './public/speech-config.mjs';
-import {repeatedTranscript} from './public/logic.mjs';
+import {speechBudget} from '../public/speech-config.mjs';
+import {repeatedTranscript} from '../public/logic.mjs';
 export function validateWav(b){
  if(b.length<44||b.length>16000*2*90+44||b.toString('ascii',0,4)!=='RIFF'||b.toString('ascii',8,12)!=='WAVE'||b.toString('ascii',12,16)!=='fmt '||b.readUInt32LE(16)!==16||b.readUInt16LE(20)!==1||b.readUInt16LE(22)!==1||b.readUInt32LE(24)!==16000||b.readUInt16LE(34)!==16||b.toString('ascii',36,40)!=='data'||b.readUInt32LE(40)!==b.length-44)throw Error('需要 16 kHz、单声道、16 位 WAV，最长 90 秒');
 }

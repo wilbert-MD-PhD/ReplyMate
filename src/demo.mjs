@@ -1,7 +1,7 @@
 import {EventEmitter} from 'node:events';
 import {setTimeout as delay} from 'node:timers/promises';
 import {retrieve} from './core.mjs';
-import {createPreparedIndex,findPrepared} from './public/prepared.mjs';
+import {createPreparedIndex,findPrepared} from '../public/prepared.mjs';
 export class DemoBridge extends EventEmitter{
  constructor(reference){super();this.reference=reference;this.index=createPreparedIndex(reference.faq);this.models=[{id:'demo',effort:'offline',hidden:false}];this.ready=Promise.resolve(this.models);}
  async prime(){return {model:'demo'};}

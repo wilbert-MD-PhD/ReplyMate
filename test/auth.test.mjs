@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {EventEmitter} from 'node:events';
-import {CodexBridge} from '../bridge.mjs';
-import {isLoginURL} from '../auth-url.mjs';
+import {CodexBridge} from '../src/bridge.mjs';
+import {isLoginURL} from '../src/auth-url.mjs';
 function bridge(rpc){const b=new EventEmitter();Object.setPrototypeOf(b,CodexBridge.prototype);Object.assign(b,{connected:Promise.resolve(),rpc,models:[],account:null,sessions:new Map(),pending:new Map()});return b;}
 test('login URLs are limited to official HTTPS destinations',()=>{
  for(const url of ['https://auth.openai.com/authorize?state=x','https://chatgpt.com/auth'])assert.equal(isLoginURL(url),true);

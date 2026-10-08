@@ -4,7 +4,7 @@
 
 快速回答及时显示，深度回答独立补充，支持语音输入、中文问题翻译和问答回看。界面为中文，回答默认使用英文。
 
-[下载 v2.5.3](#下载) · [快速开始](#快速开始) · [English](README.en.md) · [更新说明](https://github.com/wilbert-MD-PhD/ReplyMate/releases/tag/v2.5.3)
+[下载 v2.5.3](#下载) · [快速开始](#快速开始) · [English](docs/README.en.md) · [更新说明](https://github.com/wilbert-MD-PhD/ReplyMate/releases/tag/v2.5.3)
 
 v2.5.3 修复 AI 断线重连、并发设置保存和多页面会话隔离，重连后保留当前页面问答。
 
@@ -98,8 +98,8 @@ npm ci --ignore-scripts
 npm start
 ```
 
-然后访问 [http://127.0.0.1:8780](http://127.0.0.1:8780) 体验离线演示。源码 AI 配置、模型策略、测试和打包见 [开发说明](docs/development.md) 与 [组件开发](docs/components.md)。源码分支可能包含尚未进入安装包的更改，见 [源码更新记录](CHANGELOG.md)。
+然后访问 [http://127.0.0.1:8780](http://127.0.0.1:8780) 体验离线演示。源码 AI 配置、模型策略、测试和打包见 [开发说明](docs/development.md) 与 [组件开发](docs/components.md)。源码分支可能包含尚未进入安装包的更改，见 [源码更新记录](docs/CHANGELOG.md)。
 
 [发布说明](docs/release-v2.5.0.md) · [验证范围](docs/validation.md) · [报告问题](https://github.com/wilbert-MD-PhD/ReplyMate/issues)
 
-[MIT 许可](LICENSE)。附带及单独安装的组件遵循各自许可，见 [第三方组件](THIRD_PARTY_NOTICES.md)。
+[MIT 许可](LICENSE)。附带及单独安装的组件遵循各自许可，见 [第三方组件](docs/THIRD_PARTY_NOTICES.md)。

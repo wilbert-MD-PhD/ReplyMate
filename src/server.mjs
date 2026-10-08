@@ -11,11 +11,11 @@ import {retrieve,prepareRetrieval} from './core.mjs';
 import {CodexBridge} from './bridge.mjs';
 import {DemoBridge} from './demo.mjs';
 import {selectAnswerModels} from './model-policy.mjs';
-import {loadCatalog,languages,languageAllowed,appVersion} from './components/catalog.mjs';
-import {ComponentManager} from './components/manager.mjs';
-import {Settings} from './components/settings.mjs';
-import {resolveRuntime,parserFor,ComponentRequired} from './components/runtime-resolver.mjs';
-import {selfTest,silenceWav} from './components/self-test.mjs';
+import {loadCatalog,languages,languageAllowed,appVersion} from '../components/catalog.mjs';
+import {ComponentManager} from '../components/manager.mjs';
+import {Settings} from '../components/settings.mjs';
+import {resolveRuntime,parserFor,ComponentRequired} from '../components/runtime-resolver.mjs';
+import {selfTest,silenceWav} from '../components/self-test.mjs';
 import {Warmup} from './warmup.mjs';
 const catalog=await loadCatalog(),settings=new Settings(appDataDir);await settings.load();
 const startupSession={client:randomBytes(16).toString('hex'),warmup:new Warmup()},pageSessions=new Map();
@@ -185,7 +185,7 @@ const server=http.createServer(async(req,res)=>{
   const file=url.pathname==='/'?'index.html':url.pathname.slice(1);
   if(!publicFiles.has(file))return json(res,404,{error:'Not found'});
   const mime=file.endsWith('.html')?'text/html':file.endsWith('.css')?'text/css':'application/javascript';
-  const contents=await readFile(file==='auth-url.mjs'?path.join(root,file):path.join(root,'public',file));res.writeHead(200,{'Content-Type':mime+'; charset=utf-8'});res.end(contents);
+  const contents=await readFile(file==='auth-url.mjs'?path.join(root,'src',file):path.join(root,'public',file));res.writeHead(200,{'Content-Type':mime+'; charset=utf-8'});res.end(contents);
  }catch(e){if(!res.headersSent)json(res,400,{error:e.message,code:e.code,component:e.component});else res.end();}
 });
 server.requestTimeout=600000;server.headersTimeout=15000;

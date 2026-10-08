@@ -1,7 +1,7 @@
 {
   "name": "replymate",
   "version": "2.5.3",
-  "description": "ReplyMate（答伴）｜会议问答助手 · 面试答题神器。Fast model races, independent deep answers and optional speech capture.",
+  "description": "ReplyMate（答伴）｜用自己的资料准备会议问答与英文面试。快速回答与独立深度回答，支持语音输入、文档导入、中文问题翻译和问答回看。",
   "type": "module",
   "private": true,
   "license": "MIT",
@@ -9,7 +9,7 @@
     "node": ">=22.13.0"
   },
   "scripts": {
-    "start": "node server.mjs",
+    "start": "node src/server.mjs",
     "test": "node --test test/*.test.mjs",
     "import": "node scripts/import-library.mjs",
     "check": "node scripts/check-release.mjs",
