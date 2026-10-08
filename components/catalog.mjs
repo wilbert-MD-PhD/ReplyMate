@@ -1,5 +1,5 @@
 import {readFile} from 'node:fs/promises';
-export const appVersion='2.5.2';
+export const appVersion='2.5.3';
 export const platform=process.platform+'-'+process.arch;
 const base=new URL('./',import.meta.url);
 export const languages=JSON.parse(await readFile(new URL('languages.json',base),'utf8'));

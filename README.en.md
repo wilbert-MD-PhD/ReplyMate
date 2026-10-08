@@ -4,17 +4,19 @@
 
 See a quick answer first while an independent deep answer develops. ReplyMate supports speech input, Chinese question translations and session history. The interface is in Chinese; answers currently default to English.
 
-[Download v2.5.0](#download) · [Quick start](#quick-start) · [中文说明](README.md) · [Release notes](https://github.com/wilbert-MD-PhD/ReplyMate/releases/tag/v2.5.0)
+[Download v2.5.3](#download) · [Quick start](#quick-start) · [中文说明](README.md) · [Release notes](https://github.com/wilbert-MD-PhD/ReplyMate/releases/tag/v2.5.3)
+
+Version 2.5.3 fixes AI reconnection, concurrent settings updates and per-page session isolation. Reconnecting preserves the current page history.
 
 ## Download
 
-| Your computer | v2.5.0 installer | Size |
-| --- | --- | ---: |
-| Mac with Apple silicon (M series) | [macOS Apple silicon](https://github.com/wilbert-MD-PhD/ReplyMate/releases/download/v2.5.0/ReplyMate-2.5.0-macOS-arm64.dmg) | 127.9 MB |
-| Mac with an Intel processor | [macOS Intel](https://github.com/wilbert-MD-PhD/ReplyMate/releases/download/v2.5.0/ReplyMate-2.5.0-macOS-x64.dmg) | 131.7 MB |
-| Windows on Intel / AMD 64-bit | [Windows installer](https://github.com/wilbert-MD-PhD/ReplyMate/releases/download/v2.5.0/ReplyMate-2.5.0-Windows-x64-Setup.exe) | 111.5 MB |
+| Your computer | v2.5.3 installer |
+| --- | --- |
+| Mac with Apple silicon (M series) | [macOS Apple silicon](https://github.com/wilbert-MD-PhD/ReplyMate/releases/download/v2.5.3/ReplyMate-2.5.3-macOS-arm64.dmg) |
+| Mac with an Intel processor | [macOS Intel](https://github.com/wilbert-MD-PhD/ReplyMate/releases/download/v2.5.3/ReplyMate-2.5.3-macOS-x64.dmg) |
+| Windows on Intel / AMD 64-bit | [Windows installer](https://github.com/wilbert-MD-PhD/ReplyMate/releases/download/v2.5.3/ReplyMate-2.5.3-Windows-x64-Setup.exe) |
 
-These sizes cover the core app; 1 MB = 1,000,000 bytes. AI, document parsing and local speech components download separately when you install them. The app shows each download size. [All releases and older installers](https://github.com/wilbert-MD-PhD/ReplyMate/releases).
+The links above download the core app; see the release page for exact sizes. AI, document parsing and local speech components download separately when you install them. The app shows each download size. [All releases and older installers](https://github.com/wilbert-MD-PhD/ReplyMate/releases).
 
 ![ReplyMate v2.5.0: question input on the left, with a Chinese question translation and separate quick and deep answers on the right](docs/images/replymate-v2.5.0-demo.jpg)
 

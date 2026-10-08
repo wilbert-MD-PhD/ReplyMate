@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 
 module.exports = async function checkPackagedApp(origin) {
   const status = await (await fetch(origin+'/api/status')).json();
-  assert.equal(status.version, '2.5.0');
+  assert.equal(status.version, require('../package.json').version);
   assert.equal(status.desktop, true);
   assert.equal(status.backend, 'demo');
   assert.equal(status.auth.signedIn, false);
