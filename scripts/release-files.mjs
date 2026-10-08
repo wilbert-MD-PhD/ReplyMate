@@ -44,6 +44,8 @@ export const releaseFiles=[
  'test/fixtures/codex-process.mjs',
  'docs/components.md',
  'docs/images/replymate-v2.5.0-demo.jpg',
+ 'docs/images/replymate-v2.5.0-answers-3x.png',
+ 'docs/images/replymate-v2.5.0-overview-3x.png',
  'docs/latency-benchmark.md',
  'docs/benchmarks/2026-10-08/questions.json',
  'docs/benchmarks/2026-10-08/results.json',

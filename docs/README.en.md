@@ -20,7 +20,9 @@ Version 2.5.3 fixes AI reconnection, concurrent settings updates and per-page se
 
 The links above download the core app; see the release page for exact sizes. AI, document parsing and local speech components download separately when you install them. The app shows each download size. [All releases and older installers](https://github.com/wilbert-MD-PhD/ReplyMate/releases).
 
-![ReplyMate v2.5.0: question input on the left, with a Chinese question translation and separate quick and deep answers on the right](images/replymate-v2.5.0-demo.jpg)
+[![ReplyMate v2.5.0 answer detail: Chinese question translation, quick answer and deep answer](images/replymate-v2.5.0-answers-3x.png)](images/replymate-v2.5.0-answers-3x.png)
+
+Click the image for the original · [View the full interface](images/replymate-v2.5.0-overview-3x.png)
 
 *Actual interface using the bundled fictional material and offline demo. The answers and timings shown are not real AI generation or performance results.*
 

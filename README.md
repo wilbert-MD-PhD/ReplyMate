@@ -20,7 +20,9 @@ v2.5.3 修复 AI 断线重连、并发设置保存和多页面会话隔离，重
 
 表中链接为主程序，实际下载大小见发布页。AI、文档解析和本地语音组件按需下载，软件内会显示下载量。[所有版本与历史安装包](https://github.com/wilbert-MD-PhD/ReplyMate/releases)。
 
-![ReplyMate v2.5.0 实际界面：左侧输入问题，右侧显示中文问题、快速回答与深度回答](docs/images/replymate-v2.5.0-demo.jpg)
+[![ReplyMate v2.5.0 回答区：中文问题、快速回答与深度回答](docs/images/replymate-v2.5.0-answers-3x.png)](docs/images/replymate-v2.5.0-answers-3x.png)
+
+点击图片查看原图 · [查看完整界面](docs/images/replymate-v2.5.0-overview-3x.png)
 
 *截图使用随软件提供的虚构资料和离线演示。图中的回答和用时不代表真实 AI 生成结果或性能。*
 
