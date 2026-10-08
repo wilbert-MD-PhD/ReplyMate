@@ -1,6 +1,10 @@
 # Changelog
 
-## 2.5.1 — 2026-10-08
+## 2.5.2 — 2026-10-08
+
+Includes the three fixes below plus serialized atomic writes to the same path on Windows. The v2.5.1 tag was retained for audit after its cross-platform check failed; no v2.5.1 release was published.
+
+### Changes from 2.5.0
 
 - Refresh account and connection state on every status poll; invalidate warm-ups after AI process failure and reconnect without clearing page history.
 - Reserve the complete settings transaction before reading the request body, reject concurrent updates with HTTP 409, restore runtime state on failure, and use unique atomic-save files.

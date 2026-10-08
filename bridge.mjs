@@ -17,7 +17,7 @@ export class CodexBridge extends EventEmitter {
     this.child.stderr.on('data',()=>{});
     this.child.stdin.on('error',e=>this.fail(e));this.child.on('error',()=>this.fail(new Error('AI 组件未能启动。请重新打开答伴，或在组件中心修复 AI 回答组件。')));this.child.on('exit',()=>{if(!this.closed)this.fail(new Error('AI 服务已退出，请点击登录按钮重新连接。'));});
     createInterface({input:this.child.stdout}).on('line',line=>{try{this.receive(JSON.parse(line));}catch{}});
-    await this.rpc('initialize',{clientInfo:{name:'replymate',version:'2.5.1'},capabilities:{experimentalApi:true}});
+    await this.rpc('initialize',{clientInfo:{name:'replymate',version:'2.5.2'},capabilities:{experimentalApi:true}});
     this.child.stdin.write(JSON.stringify({method:'initialized'})+'\n');
   }
   async refreshAccount(){

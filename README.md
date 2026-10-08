@@ -4,14 +4,14 @@
 
 **首字目标：提交问题后 3 秒内输出快速回答的第一个正文字符。** 已安装 AI 并登录时，软件打开后默认自动预热，顶部显示状态与进度。真实延迟按每题显示，预设命中单独计时。
 
-安装与开发流程见 [组件说明](docs/components.md)，本次变化见 [2.5.1 发布说明](docs/release-v2.5.1.md)。
+安装与开发流程见 [组件说明](docs/components.md)，本次变化见 [2.5.2 发布说明](docs/release-v2.5.2.md)。
 
 
 **会议问答助手 · 面试答题神器**
 
 用自己的资料，先快速接住问题，再补充更周全的回答。ReplyMate 适用于会议汇报、面试准备与模拟练习：**快速回答由多个模型同时竞速，最先返回正文的模型继续回答；深度回答由最强模型独立生成，优先保证回答质量。** 两路同时启动、分别显示，深度回答较慢也不阻塞后续快答。当前默认英文作答，另有问题的中文翻译、预设快答和历史回看。
 
-v2.5.1 修复 AI 断线后的重连入口、并发设置保存和多页面会话隔离。此前“70% 在 3 秒内返回”来自旧版同模型双请求测试，不能作为当前方案的性能结果。[历史测试方法与完整结果](docs/latency-benchmark.md)。
+v2.5.2 修复 AI 断线后的重连入口、并发设置保存和多页面会话隔离。此前“70% 在 3 秒内返回”来自旧版同模型双请求测试，不能作为当前方案的性能结果。[历史测试方法与完整结果](docs/latency-benchmark.md)。
 
 [下载安装](https://github.com/wilbert-MD-PhD/ReplyMate/releases/latest) · [English](README.en.md) · [资料格式](docs/library-format.md)
 
@@ -19,9 +19,9 @@ v2.5.1 修复 AI 断线后的重连入口、并发设置保存和多页面会话
 
 | 你的电脑 | 下载文件 |
 | --- | --- |
-| Mac，Apple 芯片（M1、M2 等） | [macOS Apple 芯片版](https://github.com/wilbert-MD-PhD/ReplyMate/releases/download/v2.5.1/ReplyMate-2.5.1-macOS-arm64.dmg) |
-| Mac，Intel 芯片 | [macOS Intel 版](https://github.com/wilbert-MD-PhD/ReplyMate/releases/download/v2.5.1/ReplyMate-2.5.1-macOS-x64.dmg) |
-| Windows，Intel / AMD 64 位 | [Windows 安装版](https://github.com/wilbert-MD-PhD/ReplyMate/releases/download/v2.5.1/ReplyMate-2.5.1-Windows-x64-Setup.exe) |
+| Mac，Apple 芯片（M1、M2 等） | [macOS Apple 芯片版](https://github.com/wilbert-MD-PhD/ReplyMate/releases/download/v2.5.2/ReplyMate-2.5.2-macOS-arm64.dmg) |
+| Mac，Intel 芯片 | [macOS Intel 版](https://github.com/wilbert-MD-PhD/ReplyMate/releases/download/v2.5.2/ReplyMate-2.5.2-macOS-x64.dmg) |
+| Windows，Intel / AMD 64 位 | [Windows 安装版](https://github.com/wilbert-MD-PhD/ReplyMate/releases/download/v2.5.2/ReplyMate-2.5.2-Windows-x64-Setup.exe) |
 
 **Mac**：打开 DMG，将 ReplyMate 拖入“应用程序”，双击 ReplyMate。
 

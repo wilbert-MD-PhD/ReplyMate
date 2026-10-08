@@ -1,6 +1,6 @@
 {
   "name": "replymate",
-  "version": "2.5.1",
+  "version": "2.5.2",
   "description": "ReplyMate（答伴）｜会议问答助手 · 面试答题神器。Fast model races, independent deep answers and optional speech capture.",
   "type": "module",
   "private": true,

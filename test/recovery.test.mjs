@@ -12,7 +12,7 @@ const fixture=new URL('./fixtures/codex-process.mjs',import.meta.url);
 async function until(fn){for(let i=0;i<200;i++){const value=await fn();if(value)return value;await delay(25);}throw Error('Condition timed out');}
 test('unique atomic writers leave complete JSON and no temporary files',async()=>{
  const dir=await mkdtemp(path.join(tmpdir(),'replymate-atomic-'));
- try{const file=path.join(dir,'state.json');await Promise.all(Array.from({length:20},(_,i)=>atomicJSON(file,{i,text:'test'.repeat(1000)})));const result=JSON.parse(await readFile(file,'utf8'));assert.equal(result.text,'test'.repeat(1000));assert.deepEqual(await readdir(dir),['state.json']);}finally{await rm(dir,{recursive:true,force:true});}
+ try{const file=path.join(dir,'state.json');await Promise.all(Array.from({length:20},(_,i)=>atomicJSON(file,{i,text:'test'.repeat(1000)})));const result=JSON.parse(await readFile(file,'utf8'));assert.equal(result.i,19);assert.equal(result.text,'test'.repeat(1000));assert.deepEqual(await readdir(dir),['state.json']);}finally{await rm(dir,{recursive:true,force:true});}
 });
 test('settings transactions, independent page sessions and process recovery',async t=>{
  const dir=await mkdtemp(path.join(tmpdir(),'replymate-recovery-')),log=path.join(dir,'rpc.jsonl');
