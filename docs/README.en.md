@@ -2,13 +2,11 @@
 
 **Prepare for meeting Q&A and English interviews with your own reference material.**
 
-**First-text target: display the first character of the quick answer within 3 seconds of submitting a question.**
+**First-text target: start displaying an answer within 3 seconds of submitting a question.**
 
-See a quick answer first while an independent deep answer develops. ReplyMate supports speech input, Chinese question translations and session history. The interface is in Chinese; answers currently default to English.
+See a quick answer first, with an independent deep answer to follow. ReplyMate supports speech input, translates questions into Chinese and lets you revisit earlier Q&A. The interface is in Chinese; answers default to English.
 
 [Download v2.5.3](#download) · [Quick start](#quick-start) · [中文说明](../README.md) · [Release notes](https://github.com/wilbert-MD-PhD/ReplyMate/releases/tag/v2.5.3)
-
-Version 2.5.3 fixes AI reconnection, concurrent settings updates and per-page session isolation. Reconnecting preserves the current page history.
 
 ## Download
 
@@ -35,8 +33,6 @@ Click the image for the original · [View the full interface](images/replymate-v
 5. **Ask a question.** Type a question and click **立即回答**, or press `Ctrl+Enter` / `Command+Enter`. For speech input, choose browser transcription or install the local speech components.
 
 **First launch:** Installers are currently unsigned and are not Apple-notarized. Your operating system may show an unidentified-developer prompt; managed computers may block the app.
-
-**Upgrading from v2.4:** Account, reference and backup directories are retained. AI and document parsing components need to be installed once after upgrading. The app does not download all components automatically on first launch.
 
 ## Features and components
 
