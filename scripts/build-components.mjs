@@ -11,7 +11,7 @@ const triples={'darwin-arm64':'aarch64-apple-darwin','darwin-x64':'x86_64-apple-
 if(!triples[platform])throw Error('Unsupported release platform: '+platform);
 const pkg=path.dirname(require.resolve('@openai/codex-'+platform+'/package.json'));
 const output=path.join(root,'dist/components');await mkdir(output,{recursive:true});const staging=path.join(root,'build/component-staging');await mkdir(staging,{recursive:true});
-const version='2.5.0',release='https://github.com/wilbert-MD-PhD/ReplyMate/releases/download/v'+version+'/';
+const version=JSON.parse(await readFile(path.join(root,'package.json'),'utf8')).version,release='https://github.com/wilbert-MD-PhD/ReplyMate/releases/download/v'+version+'/';
 const definitions=[
  {id:'codex-runtime',name:'AI 回答',version:JSON.parse(await readFile(path.join(pkg,'package.json'),'utf8')).version,sourceDir:path.join(pkg,'vendor',triples[platform]),entry:'bin/'+(process.platform==='win32'?'codex.exe':'codex'),license:'Apache-2.0',source:'https://github.com/openai/codex',extraLicense:path.join(root,'desktop/CODEX-LICENSE')},
  {id:'docs-office',name:'Word 与 PowerPoint',version:'1.0.0',sourceDir:path.join(root,'plugins/docs-office'),entry:'index.mjs',license:'MIT; ISC',source:'https://github.com/wilbert-MD-PhD/ReplyMate/tree/v'+version+'/plugins/docs-office',nodeMin:22},

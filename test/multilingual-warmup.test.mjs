@@ -10,3 +10,11 @@ test('non-Latin questions retain meaning and cannot collide into an empty preset
 test('local speech failure never silently substitutes browser/cloud text',async()=>{const segment={text:'Browser question',frames:[new Float32Array(16000)],rate:16000,manual:false};const result=await resolveSpeech(segment,{mode:'local',transcribe:async()=>{throw Error('offline worker');}});assert.equal(result.empty,true);assert.match(result.error,/offline worker/);assert.equal(result.question,undefined);});
 
 test('Indic vowel marks remain significant in preset and duplicate keys',()=>{assert.notEqual(normalize('कल'),normalize('काल'));assert.notEqual(normalize('दिल'),normalize('दल'));});
+
+test('reset during warm-up prevents stale completion and queued jobs from restoring ready',async()=>{
+ const warm=new Warmup();let release;const pending=warm.run('old',[{label:'old',run:()=>new Promise(r=>release=r)}]);
+ let queuedRuns=0;const queued=warm.run('queued',[{label:'queued',run:()=>queuedRuns++}]);
+ warm.reset('AI 服务已退出');release();await Promise.all([pending,queued]);
+ assert.equal(warm.state.state,'waiting');assert.equal(warm.state.message,'AI 服务已退出');assert.equal(queuedRuns,0);
+ await warm.run('new',[{label:'ready',run:async()=>{}}]);assert.equal(warm.state.state,'ready');assert.equal(warm.state.completed,1);
+});

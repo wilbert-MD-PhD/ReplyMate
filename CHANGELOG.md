@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.5.1 — 2026-10-08
+
+- Refresh account and connection state on every status poll; invalidate warm-ups after AI process failure and reconnect without clearing page history.
+- Reserve the complete settings transaction before reading the request body, reject concurrent updates with HTTP 409, restore runtime state on failure, and use unique atomic-save files.
+- Isolate fast, deep and translation sessions per page while assigning startup warm-up only to the first page.
+- Add process-crash, settings-race, rollback and cross-page context regression tests.
+- Update download links and component installation instructions.
+
 ## 2.5.0
 
 - Split AI, Office, PDF and Whisper into verified optional components; core has no production dependencies.
@@ -7,8 +15,6 @@
 - Warm answer and translation sessions automatically at startup with visible progress; display the 3-second first-character goal.
 - Add seven pinned Whisper model variants, language settings, Unicode text handling and bounded cancellable transcription.
 
-
-## Unreleased
 
 - Restores the original speed/depth design: race two fast models by default, keep the first non-empty responder, and cancel only the losing fast request.
 - Reserves GPT-6 Astra for independent deep answers with its catalog-default reasoning effort and a visible model selector; missing Astra requires an explicit choice.

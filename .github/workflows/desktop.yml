@@ -72,4 +72,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.ref_name }}
-        run: gh release create "$RELEASE_TAG" installers/desktop/*.dmg installers/desktop/*.exe installers/components/* installers/SHA256SUMS.txt --verify-tag --draft --title "ReplyMate $RELEASE_TAG · 桌面安装版" --notes-file docs/release-v2.5.0.md
+        run: gh release create "$RELEASE_TAG" installers/desktop/*.dmg installers/desktop/*.exe installers/components/* installers/SHA256SUMS.txt --verify-tag --draft --title "ReplyMate $RELEASE_TAG · 桌面安装版" --notes-file "docs/release-${RELEASE_TAG}.md"

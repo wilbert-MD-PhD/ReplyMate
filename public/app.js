@@ -9,7 +9,8 @@ import {AnswerLanes} from './answer-lanes.mjs';
 import {resolveSpeech} from './speech-pipeline.mjs';
 const $=id=>document.getElementById(id),store=new QuestionStore(),lanes=new AnswerLanes();
 
-let client=crypto.randomUUID(),backendMode='demo',speechSettings={language:'en',speechMode:'fast'},aiInstalled=false,pendingImport=null,failedSegment=null;const asrControllers=new Set();
+const client=crypto.randomUUID(),statusURL='/api/status?client='+encodeURIComponent(client);
+let backendMode='demo',speechSettings={language:'en',speechMode:'fast'},aiInstalled=false,pendingImport=null,failedSegment=null;const asrControllers=new Set();
 
 let token='',configured=false,faq=[],faqIndex=new Map(),terms=[],warming=Promise.resolve(),activeController=null,pumping=false;
 let listening=false,stream=null,context=null,node=null,transcribing=0,lastSubmitted='',lastSubmitTime=0,processing=Promise.resolve(),recognizer=null,recognizerState='stopped',lastAudioPacket=null,audioReceivedMs=0,pendingSegment=null;
@@ -159,19 +160,24 @@ async function startListening(){
 }
 function stopListening(){listening=false;try{recognizer?.stop();}catch{}recognizer=null;stream?.getTracks().forEach(t=>t.stop());stream=null;context?.close().catch(()=>{});context=null;node=null;capture.discard();$('listen').textContent='开始收音';$('listenStatus').textContent='已暂停';$('audioHealth').textContent='已接收音频 '+(audioReceivedMs/1000).toFixed(1)+' 秒';$('micDot').classList.remove('live');$('finish').disabled=true;$('speechMode').disabled=false;$('levelBar').style.width='0';$('partial').textContent='';}
 function showASR(asr){$('asrStatus').textContent=asr.state==='ready'?'本地 Whisper 已就绪':asr.state==='disabled'?'本地转写未启用，可使用浏览器转写或手动输入':'本地语音：'+(asr.error||'启动中');for(const opt of $('speechMode').options)if(opt.value!=='fast')opt.disabled=asr.state!=='ready';}
-async function init(){try{const s=await(await fetch('/api/status')).json();token=s.token;setSessionToken(token);configured=s.configured;backendMode=s.backend;terms=s.terms||[];
- $('connection').textContent=configured?(s.backend==='demo'?'离线演示 · 无 AI 生成':'Codex 已连接'):'连接失败';$('backendStatus').textContent=s.error||s.mode;showASR(s.asr);speechSettings=s.settings||speechSettings;$('speechMode').value=speechSettings.speechMode||'fast';$('question').lang=speechSettings.language==='auto'?'':speechSettings.language;$('questionsOnly').disabled=speechSettings.language!=='en';aiInstalled=s.aiInstalled;client=s.client||client;showWarm(s.warmup);
+function syncStatus(s){
+ token=s.token;setSessionToken(token);configured=s.configured;backendMode=s.backend;aiInstalled=s.aiInstalled;
+ $('connection').textContent=configured?(s.backend==='demo'?'离线演示 · 无 AI 生成':'Codex 已连接'):'连接失败';
+ $('backendStatus').textContent=s.error||s.mode;showAccount(s.auth);showWarm(s.warmup);showASR(s.asr);
+}
+async function init(){try{const s=await(await fetch(statusURL)).json();syncStatus(s);terms=s.terms||[];
+ speechSettings=s.settings||speechSettings;$('speechMode').value=speechSettings.speechMode||'fast';$('question').lang=speechSettings.language==='auto'?'':speechSettings.language;$('questionsOnly').disabled=speechSettings.language!=='en';
  $('model').replaceChildren(...s.models.map(m=>new Option('单模型 · '+m.id+' · '+m.effort,m.id)));if(s.raceModels.length>1)$('model').add(new Option('多模型竞速 · 首个返回者回答','race'),0);$('model').value=s.fastSelection;
  $('raceDescription').textContent=s.raceModels.length>1?'默认同时请求 '+s.raceModels.join('、')+'，首个非空正文返回后保留胜出者，停止其他竞速请求。':s.backend==='demo'?'离线演示仅用于体验界面。':'当前只有一个快速模型可用，暂不能竞速。';
  $('deepModel').replaceChildren(...s.models.map(m=>new Option(m.id+(m.id==='gpt-6-astra'?' · 最强模型优先':''),m.id)));if(!s.secondaryModel)$('deepModel').add(new Option('请选择深度回答模型',''),0);$('deepModel').value=s.secondaryModel;
  $('deepDescription').textContent=s.backend==='demo'?'登录后默认使用 GPT-6 Astra 独立生成深度回答。':s.secondaryError||'默认使用 GPT-6 Astra 独立生成，优先回答质量。它可能较慢，竞速结束不会取消深度回答，也不阻塞下一题快答。';
  $('benchResults').textContent=s.backend==='demo'?'演示模式仅显示示例或资料摘录，不调用模型，也不自动翻译未知问题。':'模型来自当前账户列表，访问权限以实际请求为准。';
- $('sources').replaceChildren();for(const src of s.reference){const li=document.createElement('li');li.textContent=src.name;$('sources').append(li);}faq=await(await fetch('/api/faq')).json();faqIndex=createPreparedIndex(faq);$('faqCount').textContent=faq.length+' 条预设问答';$('referenceStatus').textContent=(s.referenceVersion||'')+' · '+faq.length+' 条问答 · '+faqIndex.size+' 种问法已加载';renderFAQ();showAccount(s.auth);if(s.auth?.pending)pollLogin();$('quitApp').hidden=!s.desktop;$('importState').textContent=s.customLibrary?'已载入：'+s.reference.map(x=>x.name).join('、'):'当前使用虚构示例，可直接点击下方预设问题体验。';if(s.backend==='demo')notice('演示模式：不调用 AI。登录后即可生成真实回答。');else if(!configured)notice(s.error);else notice(''); // Startup warm-up is owned by the server and survives page reloads.
+ $('sources').replaceChildren();for(const src of s.reference){const li=document.createElement('li');li.textContent=src.name;$('sources').append(li);}faq=await(await fetch('/api/faq')).json();faqIndex=createPreparedIndex(faq);$('faqCount').textContent=faq.length+' 条预设问答';$('referenceStatus').textContent=(s.referenceVersion||'')+' · '+faq.length+' 条问答 · '+faqIndex.size+' 种问法已加载';renderFAQ();showAccount(s.auth);if(s.auth?.pending)pollLogin();$('quitApp').hidden=!s.desktop;$('importState').textContent=s.customLibrary?'已载入：'+s.reference.map(x=>x.name).join('、'):'当前使用虚构示例，可直接点击下方预设问题体验。';if(s.backend==='demo')notice('演示模式：不调用 AI。登录后即可生成真实回答。');else if(!configured)notice(s.error);else notice(''); // Reconnection refreshes controls without clearing the in-memory question store.
 
  }catch(e){notice('连接失败：'+e.message);}render();}
 function showAccount(auth={}){
  $('accountState').textContent=auth.signedIn?(auth.error?'账号已登录，AI 连接未就绪：'+auth.error:'账号已连接，已自动选择可用模型。'):auth.pending?'请在浏览器打开的官方页面完成登录，完成后这里会自动连接。':auth.error||'无需配置。可以先用示例体验，再登录自己的账号。';
- $('loginBtn').hidden=auth.signedIn&&!auth.error;$('loginBtn').textContent=auth.signedIn?'重新连接':aiInstalled?'登录 ChatGPT':'启用 AI 回答';$('loginBtn').disabled=!!auth.pending;
+ $('loginBtn').hidden=auth.signedIn&&!auth.error;$('loginBtn').textContent=auth.signedIn||auth.error&&aiInstalled?'重新连接':aiInstalled?'登录 ChatGPT':'启用 AI 回答';$('loginBtn').disabled=!!auth.pending;
  $('logoutBtn').hidden=!auth.signedIn;$('cancelLogin').hidden=!auth.pending;
  if(!auth.pending)$('loginLink').hidden=true;
 }
@@ -212,4 +218,4 @@ $('silence').oninput=()=>$('silenceLabel').textContent=$('silence').value+' ms';
 document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){e.preventDefault();$('answer').click();}if(e.key==='Escape')stopListening();if(!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)){if(e.key==='ArrowLeft')$('prev').click();if(e.key==='ArrowRight')$('next').click();}});
 setInterval(()=>{autoCheck();render();},200);window.addEventListener('beforeunload',()=>{for(const ac of asrControllers)ac.abort();stopListening();activeController?.abort();lanes.cancelAll();for(const q of store.items)if(q.meta.audioURL)URL.revokeObjectURL(q.meta.audioURL);});init();
 
-let checkingStatus=false;setInterval(async()=>{if(checkingStatus)return;checkingStatus=true;try{const s=await(await fetch('/api/status')).json();showWarm(s.warmup);showASR(s.asr);if(s.backend!==backendMode)await init();}catch{}finally{checkingStatus=false;}},1500);
+let checkingStatus=false;setInterval(async()=>{if(checkingStatus)return;checkingStatus=true;try{const s=await(await fetch(statusURL)).json();const changed=s.backend!==backendMode;syncStatus(s);if(changed)await init();}catch{}finally{checkingStatus=false;}},1500);

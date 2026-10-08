@@ -1,6 +1,6 @@
 # 开发与可选配置
 
-桌面安装包已包含运行环境和 Codex，普通使用无需配置本页内容。
+桌面主程序包含运行环境，Codex 在组件中心按需安装，普通使用无需配置本页内容。
 
 源码模式需要 Node.js 22.13+，先运行 `npm ci --ignore-scripts`。默认 `npm start` 启动离线演示，安装 Codex CLI 后可通过页面按钮登录。设置 `QA_BACKEND=auto` 可在启动时检查现有登录，未登录时保留演示。`QA_BACKEND=codex` 同样会在启动时连接 Codex，未登录时可通过页面完成登录。
 

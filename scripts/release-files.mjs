@@ -37,6 +37,9 @@ export const releaseFiles=[
  'test/components.test.mjs',
  'test/multilingual-warmup.test.mjs',
  'docs/release-v2.5.0.md',
+ 'docs/release-v2.5.1.md',
+ 'test/recovery.test.mjs',
+ 'test/fixtures/codex-process.mjs',
  'docs/components.md',
  'scripts/verify-local-components.mjs'
 ].sort();
