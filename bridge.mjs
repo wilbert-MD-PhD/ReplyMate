@@ -10,12 +10,12 @@ export function selectEffort(model,requested=''){const supported=model.efforts||
 export class CodexBridge extends EventEmitter {
   constructor(reference){super();this.reference=reference;this.pending=new Map();this.sessions=new Map();this.seq=0;this.active=new Map();this.ready=this.init();}
   async init(){
-    this.cwd=await mkdtemp(path.join(tmpdir(),'meeting-qa-'));
+    this.cwd=await mkdtemp(path.join(tmpdir(),'replymate-'));
     this.child=spawn(config.codexBin,['app-server','--listen','stdio://','-c','features.shell_tool=false','-c','features.unified_exec=false','-c','features.code_mode=false','-c','features.apply_patch_freeform=false','-c','features.multi_agent=false','-c','features.apps=false','-c','web_search="disabled"','-c','project_doc_max_bytes=0'],{cwd:this.cwd,stdio:['pipe','pipe','pipe']});
     this.child.stderr.on('data',()=>{});
     this.child.stdin.on('error',e=>this.fail(e));this.child.on('error',()=>this.fail(new Error('无法启动 Codex。请安装 CLI，并检查 CODEX_BIN。')));this.child.on('exit',()=>this.fail(new Error('Codex 服务已退出，请重新启动助手。')));
     createInterface({input:this.child.stdout}).on('line',line=>{try{this.receive(JSON.parse(line));}catch{}});
-    await this.rpc('initialize',{clientInfo:{name:'meeting_qa_assistant',version:'2.3.0'},capabilities:{experimentalApi:true}});
+    await this.rpc('initialize',{clientInfo:{name:'replymate',version:'2.3.1'},capabilities:{experimentalApi:true}});
     this.child.stdin.write(JSON.stringify({method:'initialized'})+'\n');
     const account=await this.rpc('account/read',{});
     if(!account.account)throw new Error('请先运行 codex login 完成登录。');

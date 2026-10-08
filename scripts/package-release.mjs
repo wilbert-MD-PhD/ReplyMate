@@ -7,7 +7,7 @@ import {checkRelease} from './check-release.mjs';
 const root=path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 await checkRelease();
 const {version}=JSON.parse(await readFile(path.join(root,'package.json'),'utf8'));
-const stem='meeting-qa-assistant-v'+version,dir=path.join(root,'dist');await mkdir(dir,{recursive:true});
+const stem='replymate-v'+version,dir=path.join(root,'dist');await mkdir(dir,{recursive:true});
 function crc32(data){let crc=0xffffffff;for(const b of data){crc^=b;for(let k=0;k<8;k++)crc=(crc>>>1)^((crc&1)?0xedb88320:0);}return (crc^0xffffffff)>>>0;}
 const local=[],central=[],manifest=[];let offset=0;
 for(const name of releaseFiles){

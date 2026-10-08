@@ -37,7 +37,7 @@ const server=http.createServer(async(req,res)=>{
   const url=new URL(req.url,origin);
   if(req.method==='GET'&&url.pathname==='/api/session')return json(res,200,{token});
   if(req.method==='GET'&&url.pathname==='/api/status'){
-   await ready;return json(res,200,{configured:!startupError,token,models:bridge.models||[],reference:reference.sources,referenceVersion:reference.version,referenceStats:reference.stats,error:startupError,version:'2.3.0',backend:config.backend,mode:config.backend==='demo'?'离线演示，无 AI 生成':'通过本机 Codex 登录使用模型',raceModels,fastModel,secondaryModel,terms:reference.terms,asr:{state:asr.state,error:asr.error}});
+   await ready;return json(res,200,{configured:!startupError,token,models:bridge.models||[],reference:reference.sources,referenceVersion:reference.version,referenceStats:reference.stats,error:startupError,version:'2.3.1',backend:config.backend,mode:config.backend==='demo'?'离线演示，无 AI 生成':'通过本机 Codex 登录使用模型',raceModels,fastModel,secondaryModel,terms:reference.terms,asr:{state:asr.state,error:asr.error}});
   }
   if(req.method==='GET'&&url.pathname==='/api/faq')return json(res,200,reference.faq.filter(f=>f.reviewed));
   if(req.method==='POST'){
@@ -81,5 +81,5 @@ const server=http.createServer(async(req,res)=>{
 server.requestTimeout=30000;server.headersTimeout=15000;
 function close(){for(const controller of active.values())controller.abort();bridge.close();asr.close();server.close();server.closeAllConnections();}
 server.on('error',error=>{console.error(error.code==='EADDRINUSE'?'端口已占用，请在 .env 修改 PORT':'服务启动失败：'+error.message);close();process.exitCode=1;});
-server.listen(port,'127.0.0.1',()=>console.log(`Meeting Q&A: ${origin}\nBackend: ${config.backend}`));
+server.listen(port,'127.0.0.1',()=>console.log(`ReplyMate: ${origin}\nBackend: ${config.backend}`));
 for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>{close();setTimeout(()=>process.exit(),300).unref();});

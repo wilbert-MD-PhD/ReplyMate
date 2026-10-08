@@ -14,7 +14,7 @@ test('clean demo server: paired streams, session auth, private-file isolation an
   for(let i=0;i<100;i++){try{const r=await fetch(origin+'/api/status');status=await r.json();break;}catch{if(child.exitCode!==null)throw Error(output);await delay(50);}}
   assert.ok(status,'server did not start');assert.equal(status.backend,'demo');assert.equal(status.configured,true);assert.equal(status.asr.state,'disabled');
   const post=(route,data,headers={})=>fetch(origin+route,{method:'POST',headers:{Origin:origin,'X-Session-Token':status.token,'Content-Type':'application/json',...headers},body:JSON.stringify(data)});
-  await t.test('client assets and curated demo load',async()=>{const r=await fetch(origin+'/');assert.match(await r.text(),/Meeting Q&A/);const faq=await(await fetch(origin+'/api/faq')).json();assert.equal(faq.length,3);});
+  await t.test('client assets and curated demo load',async()=>{const r=await fetch(origin+'/');assert.match(await r.text(),/ReplyMate/);const faq=await(await fetch(origin+'/api/faq')).json();assert.equal(faq.length,3);});
   await t.test('secret and imported directories are never served',async()=>{for(const route of ['/user-data/reference.json','/.env','/bridge.mjs','/examples/reference.json','/%2e%2e/.env'])assert.equal((await fetch(origin+route)).status,404);});
   await t.test('invalid session and cross-origin requests are rejected',async()=>{assert.equal((await post('/api/answer',{question:'Hello?'},{'X-Session-Token':'stale'})).status,403);assert.equal((await fetch(origin+'/api/session',{headers:{Origin:'https://example.invalid'}})).status,403);});
   await t.test('two answer lanes and translation finish independently',async()=>{

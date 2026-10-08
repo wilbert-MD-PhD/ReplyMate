@@ -1,10 +1,12 @@
-# Meeting Q&A
+# ReplyMate · 答伴
+
+**会议问答神器 · 面试答题神器** — your companion for meeting Q&A and interview practice.
 
 A general-purpose open-source edition based on v2.3: paired English answers,
 Chinese question translations, prepared responses, live speech capture, and answer history.
 The interface is in Chinese and currently targets English presentation Q&A.
 
-[中文说明](README.md) · [Download](https://github.com/wilbert-MD-PhD/meeting-qa-assistant/releases/latest)
+[中文说明](README.md) · [Download](https://github.com/wilbert-MD-PhD/ReplyMate/releases/latest)
 
 ## Quick start
 

@@ -1,16 +1,19 @@
-# Meeting Q&A · 会议问答助手
+# ReplyMate · 答伴
 
-基于 v2.3 整理的通用开源版。用自己的汇报资料，准备可直接口述的英文回答。
+**会议问答神器 · 面试答题神器**
+
+用自己的资料，准备可直接口述的英文回答。适用于会议汇报问答、面试准备与模拟练习。
+基于 v2.3 整理的通用开源版。
 界面为中文，问题提供中文翻译，两个英文回答独立排队和流式显示。
 
-[English](README.en.md) · [下载最新版](https://github.com/wilbert-MD-PhD/meeting-qa-assistant/releases/latest) · [资料格式](docs/library-format.md) · [验证范围](docs/validation.md)
+[English](README.en.md) · [下载最新版](https://github.com/wilbert-MD-PhD/ReplyMate/releases/latest) · [资料格式](docs/library-format.md) · [验证范围](docs/validation.md)
 
 ## 下载后快速体验
 
 需要 **Node.js 22 或更新版本**，从 [Node.js 官网](https://nodejs.org/) 安装。
 应用没有第三方 npm 运行依赖，不需要构建前端，也不需要 Python。
 
-1. 在 Releases 下载 `meeting-qa-assistant-v2.3.0.zip` 并解压。
+1. 在 Releases 下载 `replymate-v2.3.1.zip` 并解压。
 2. 在解压后的目录运行 `npm start`。也可双击 macOS 的 `start.command` 或 Windows 的 `start.bat`，Linux 执行 `sh start.sh`。
 3. 打开 **http://127.0.0.1:8780**，点击页面下方的 `Project purpose` 示例问题。
 

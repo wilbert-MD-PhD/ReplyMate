@@ -1,7 +1,7 @@
 {
-  "name": "meeting-qa-assistant",
-  "version": "2.3.0",
-  "description": "Local presentation Q&A with paired answers, prepared responses, and optional speech capture.",
+  "name": "replymate",
+  "version": "2.3.1",
+  "description": "ReplyMate（答伴）｜会议问答神器 · 面试答题神器。Paired answers, prepared responses and optional speech capture.",
   "type": "module",
   "private": true,
   "license": "MIT",
@@ -17,6 +17,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/wilbert-MD-PhD/meeting-qa-assistant.git"
-  }
+    "url": "https://github.com/wilbert-MD-PhD/ReplyMate.git"
+  },
+  "keywords": [
+    "replymate",
+    "presentation",
+    "interview-preparation",
+    "qa",
+    "speech-recognition"
+  ]
 }
