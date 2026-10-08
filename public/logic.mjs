@@ -1,12 +1,12 @@
-export const normalize=t=>t.normalize('NFKC').toLocaleLowerCase().replace(/[^\p{L}\p{N}]/gu,'');
+export const normalize=t=>t.normalize('NFKC').toLocaleLowerCase().replace(/[^\p{L}\p{M}\p{N}]/gu,'');
 export function cleanTranscript(t){return t.trim();}
 export function looksQuestion(t){if(/[^\p{Script=Latin}\p{N}\p{P}\p{Z}\s]/u.test(t))return true;return /^(?:(?:okay|ok|so|well|yes|thank you)[,. ]+)*(what|why|how|when|where|which|who|can|could|would|should|do|does|did|is|are|will|please|explain|describe|tell|have|has)\b|\b(could you|can you|would you|wondering|my question|i wonder|i want to ask)\b|\?/i.test(t);}
 export function transcriptDecision(browser,local,{confidence=null,localConfidence=null,verified=false}={}){
  browser=cleanTranscript(browser||'');local=cleanTranscript(local||'');
- const score=t=>{if(repeatedTranscript(t))return -100;const words=t.match(/[\p{L}\p{N}]+/gu)||[];return (looksQuestion(t)?4:0)+Math.min(words.length,8)/4-(/\b(?:to|the|a|an|of|with|and)\s*[?.]*$/i.test(t)?3:0);};
+ const score=t=>{if(repeatedTranscript(t))return -100;const words=t.match(/[\p{L}\p{M}\p{N}]+/gu)||[];return (looksQuestion(t)?4:0)+Math.min(words.length,8)/4-(/\b(?:to|the|a|an|of|with|and)\s*[?.]*$/i.test(t)?3:0);};
  const text=local&&(!browser||score(local)>=score(browser))?local:browser;
  const disagreement=!!(browser&&local&&normalize(browser)!==normalize(local));
- const unclear=(text.match(/[\p{L}\p{N}]+/gu)||[]).length<2;
+ const unclear=(text.match(/[\p{L}\p{M}\p{N}]+/gu)||[]).length<2;
  // A warning is visible and accompanies the model input; it must not replace a usable answer.
  return {text,clarify:false,needsReview:unclear||disagreement||!!(confidence!==null&&confidence<.55)||!!(localConfidence!==null&&localConfidence<.55),reason:unclear?'部分词未听清，已交给答题模型结合原问题判断':disagreement?'转写存在差异，原文可展开查看':verified?'本地转写完成':'浏览器转写',alternatives:[browser,local].filter((x,i,a)=>x&&!repeatedTranscript(x)&&a.indexOf(x)===i)};
 }
@@ -36,13 +36,14 @@ export class TranscriptBuffer{
  clear(){this.prefix='';this.cursor=this.results.size;}
 }
 export function repeatedTranscript(text){
- const words=text.normalize('NFKC').toLocaleLowerCase().match(/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]|[\p{L}\p{N}]+/gu)||[];if(!words.length)return true;
+ const words=text.normalize('NFKC').toLocaleLowerCase().match(/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]|[\p{L}\p{M}\p{N}]+/gu)||[];if(!words.length)return true;
  for(let n=1;n<=4;n++){const counts=new Map();for(let i=0;i+n<=words.length;i++){const key=words.slice(i,i+n).join(' ');counts.set(key,(counts.get(key)||0)+1);}const max=Math.max(0,...counts.values());if(max>=Math.max(n===1?6:4,Math.ceil(words.length/(n*2))))return true;}
  return false;
 }
-export function hasQuestionContent(text){
+export function hasQuestionContent(text,language='en'){
+ if(language!=='en')return !!normalize(text)&&!repeatedTranscript(text);
  if(/[^\p{Script=Latin}\p{N}\p{P}\p{Z}\s]/u.test(text))return !!normalize(text)&&!repeatedTranscript(text);
- const t=text.toLowerCase().normalize('NFKC').replace(/[^\p{L}\p{N} ]/gu,' ').replace(/\s+/g,' ').trim();if(!t||repeatedTranscript(text))return false;
+ const t=text.toLowerCase().normalize('NFKC').replace(/[^\p{L}\p{M}\p{N} ]/gu,' ').replace(/\s+/g,' ').trim();if(!t||repeatedTranscript(text))return false;
  if(/^(?:(?:hello|hi|okay|ok|yes|right|thanks|thank you|so|well)\s*)+$/.test(t))return false;
  if(/^(?:(?:okay|ok|so|well)\s+)*(?:i have a question|here is (?:a|the) question|my question is|i want to ask(?: a question)?)$/.test(t))return false;
  if(/\b(?:to|the|a|an|of|with|and|from|about|through|can|could|will|would|you)\s*$/.test(t))return false;

@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const {zipSync, strToU8} = require('fflate');
 
 module.exports = async function checkPackagedApp(origin) {
   const status = await (await fetch(origin+'/api/status')).json();

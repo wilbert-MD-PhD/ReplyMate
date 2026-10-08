@@ -16,14 +16,16 @@ try{
   const file=path.join(root,'dist/components',new URL(e.url).pathname.split('/').at(-1));
   if(!manager.installed(e.id))await manager.importFile(e.id,createReadStream(file));await manager.verify(e.id);report.components.push({id:e.id,version:e.version,downloadBytes:e.bytes,installedBytes:manager.state.installed[e.id].bytes,verified:true});await save();console.log('Verified component '+e.id);
  }
- const wav=await readFile(path.join(root,'dist/qa/jfk-pcm.wav'));
+ const original=await readFile(path.join(root,'dist/qa/jfk.wav'));let pcm;
+ for(let offset=12;offset+8<=original.length;){const size=original.readUInt32LE(offset+4);if(original.toString('ascii',offset,offset+4)==='data'){pcm=original.subarray(offset+8,offset+8+size);break;}offset+=8+size+(size%2);}
+ if(!pcm)throw Error('Public WAV sample has no PCM data');const wav=Buffer.concat([silenceWav().subarray(0,44),pcm]);wav.writeUInt32LE(wav.length-8,4);wav.writeUInt32LE(pcm.length,40);
  for(const model of catalog.filter(e=>e.kind==='model')){
   const modelFile=process.argv[2];if(model.id==='whisper-large-v3-turbo-q5_0'&&modelFile&&!manager.installed(model.id))await manager.importFile(model.id,createReadStream(path.resolve(modelFile)));
   if(!manager.installed(model.id)){const task=await manager.start(model.id);while(manager.busy)await new Promise(r=>setTimeout(r,500));if(task.state!=='done')throw Error(model.id+': '+task.error);}
   const start=performance.now(),asr=new LocalASR(root,[],{bin:manager.entryPath('whisper-runtime'),model:manager.entryPath(model.id),modelId:model.id,version:'1.9.5-replymate.1',language:'en',threads:4});
   try{await asr.ready;if(asr.state!=='ready')throw Error(asr.error);const loadMs=Math.round(performance.now()-start),cold=await asr.transcribe(wav),warm=await asr.transcribe(wav),silence=await asr.transcribe(silenceWav());
    const forbidden=await fetch(asr.url.replace('/inference','/health'),{headers:{Origin:'https://example.invalid'}});if(forbidden.status!==403)throw Error('Worker accepted a browser origin');
-   report.models.push({id:model.id,bytes:model.bytes,loadMs,cold:{text:cold.text,ms:cold.ms,rtf:cold.rtf},warm:{text:warm.text,ms:warm.ms,rtf:warm.rtf},silence:silence.text,originBlocked:forbidden.status===403});console.log('Verified model '+model.id+' RTF '+warm.rtf.toFixed(2));await save();
+   report.models.push({id:model.id,bytes:model.bytes,loadMs,cold:{text:cold.text,ms:cold.ms,rtf:cold.rtf},warm:{text:warm.text,ms:warm.ms,rtf:warm.rtf},silence:silence.text,silenceSuppressed:silence.text==='',originBlocked:forbidden.status===403});console.log('Verified model '+model.id+' RTF '+warm.rtf.toFixed(2));await save();
   }finally{await asr.close();}
  }
  report.completed=new Date().toISOString();await save();

@@ -33,6 +33,7 @@ export const releaseFiles=[
  'scripts/build-components.mjs',
  'scripts/build-whisper.mjs',
  'scripts/audit-desktop.mjs',
+ 'test/asr-lifecycle.test.mjs',
  'test/components.test.mjs',
  'test/multilingual-warmup.test.mjs',
  'docs/release-v2.5.0.md',
