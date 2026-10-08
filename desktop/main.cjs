@@ -6,15 +6,21 @@ app.setName('ReplyMate');
 const smoke = process.argv.includes('--smoke-test');
 const smokeData = smoke ? fs.mkdtempSync(path.join(os.tmpdir(), 'replymate-desktop-test-')) : null;
 if (smokeData) app.setPath('userData', smokeData);
-let child, tray, origin, stopping = false, timer;
-function finish(){tray?.destroy();if(smokeData)fs.rmSync(smokeData,{recursive:true,force:true});app.exit(process.exitCode||0);}
+let child, tray, origin, stopping = false, timer, shutdownTimer;
+function finish(){
+  clearTimeout(shutdownTimer);tray?.destroy();
+  if(smoke)console.log('DESKTOP_SMOKE_EXIT');
+  try{if(smokeData)fs.rmSync(smokeData,{recursive:true,force:true,maxRetries:3,retryDelay:200});}
+  catch(error){if(smoke)console.error('Smoke cleanup: '+error.message);}
+  finally{app.exit(process.exitCode||0);}
+}
 function openApp() { if (origin) shell.openExternal(origin); }
 function stop() {
   if (stopping) return;
   stopping = true; clearTimeout(timer);
   if (child) {
     child.postMessage({type:'shutdown'});
-    setTimeout(() => { child?.kill(); finish(); }, 2500).unref();
+    shutdownTimer=setTimeout(() => { child?.kill(); finish(); }, 2500);
   } else finish();
 }
 if (!app.requestSingleInstanceLock()) app.quit();
@@ -22,7 +28,7 @@ else {
   app.on('second-instance', openApp);
   app.on('activate', openApp);
   app.on('before-quit', event => { if (!stopping && child) { event.preventDefault(); stop(); } });
-  app.on('will-quit', () => { tray?.destroy(); if (smokeData) fs.rmSync(smokeData,{recursive:true,force:true}); });
+  app.on('will-quit', () => { tray?.destroy(); });
   app.whenReady().then(() => {
     const root = path.join(__dirname, '..');
     const runtime = app.isPackaged ? path.join(process.resourcesPath,'codex') : path.join(root,'build','codex');

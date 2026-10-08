@@ -122,4 +122,4 @@ server.on('error',error=>{console.error(error.code==='EADDRINUSE'?'端口已占�
 server.listen(port,'127.0.0.1',()=>{port=server.address().port;origin=`http://127.0.0.1:${port}`;console.log(`ReplyMate: ${origin}`);process.parentPort?.postMessage({type:'ready',origin});});
 for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>{close();setTimeout(()=>process.exit(),300).unref();});
 
-process.parentPort?.on('message',({data})=>{if(data?.type==='shutdown'){close();setTimeout(()=>process.exit(),300).unref();}});
+process.parentPort?.on('message',({data})=>{if(data?.type==='shutdown'){close();setTimeout(()=>process.exit(),300);}});
