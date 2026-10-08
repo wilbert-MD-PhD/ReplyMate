@@ -29,6 +29,7 @@ export class ComponentManager{
  async saveTasks(){await atomicJSON(path.join(this.downloads,'tasks.json'),[...this.tasks.values()].slice(-40));}
  async lock(){if(this.busy)throw error('已有组件任务正在进行');const file=path.join(this.dir,'.component-install.lock');
   try{const h=await open(file,'wx',0o600);await h.writeFile(JSON.stringify({pid:process.pid}));await h.close();}catch(e){if(e.code!=='EEXIST')throw e;let owner;try{owner=JSON.parse(await readFile(file,'utf8'));}catch{throw error('安装锁异常，请关闭其他实例后检查');}let alive=true;try{process.kill(owner.pid,0);}catch(x){if(x.code==='ESRCH')alive=false;}if(alive)throw error('另一实例正在管理组件');await rm(file);return this.lock();}
+  try{this.state=await readJSON(path.join(this.dir,'component-state.json'),{installed:{}});}catch(e){await rm(file,{force:true});throw e;}
   this.busy=true;return async()=>{this.busy=false;await rm(file,{force:true});};
  }
  async start(id,options={}){const plan=this.plan(id,options),unlock=await this.lock();const task={id:randomUUID(),component:id,state:'queued',downloaded:0,total:plan.downloadBytes,items:plan.entries.map(e=>e.id),completed:[],created:Date.now()};this.tasks.set(task.id,task);void this.run(task,unlock).catch(e=>{task.state='error';task.error=e.message;});return task;}
@@ -74,7 +75,7 @@ export class ComponentManager{
  }
  async control(id,action){const task=this.tasks.get(id);if(!task)throw error('任务不存在');if(action==='resume')return this.resume(id);if(!['pause','cancel'].includes(action))throw error('无效操作');
   if(task===this.current){if(task.state!=='downloading'&&task.state!=='queued')throw error('正在校验或切换组件，请稍候');task.intent=action==='pause'?'paused':'cancelled';this.controller.abort(error(action==='pause'?'下载已暂停':'下载已取消'));}
-  else{if(action==='pause')throw error('任务未在下载');task.state='cancelled';await this.removePartial(task);await this.saveTasks();}return task;
+  else{if(action==='pause')throw error('任务未在下载');const unlock=await this.lock();try{task.state='cancelled';await this.removePartial(task);await this.saveTasks();}finally{await unlock();}}return task;
  }
  async removePartial(task){for(const id of task.items){const p=this.partial(this.entry(id));await rm(p,{force:true});await rm(p+'.json',{force:true});}}
  async verify(id){const unlock=await this.lock();try{const r=this.state.installed[id];if(!r)throw error('组件未安装');if(!r.manifest?.length)throw error('组件缺少校验清单，请修复');for(const f of r.manifest||[]){safeRelative(f.path);if(await sha256(path.join(this.directory(id),f.path))!==f.sha256)throw error('组件损坏，请修复');}await this.selfTest(this.entry(id),this.directory(id));return {ok:true};}finally{await unlock();}}
