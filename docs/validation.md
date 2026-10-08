@@ -6,7 +6,7 @@ Local verification on 2026-10-08 passed 62 automated tests, including account li
 
 The desktop workflow builds macOS arm64, macOS x64 and Windows x64 separately. Each packaged executable must pass a clean-account startup check before its installer is uploaded: the bundled runtime starts the server on an available loopback port, the bundled Codex initializes without a login, the page loads, Word and PDF imports succeed, and the demo answers from the imported text. The check excludes developer runtimes from PATH. These checks do not complete a user's account authorization or measure real microphone recognition.
 
-Installers are currently unsigned and are not Apple-notarized. Cross-platform build and smoke-test results are recorded in GitHub Actions. A successful build is not a claim of universal OS, browser, account or microphone compatibility.
+Installers are currently unsigned and are not Apple-notarized. All three platforms passed the packaged Word/PDF import, demo-answer and shutdown checks in [GitHub Actions run 37742647444](https://github.com/wilbert-MD-PhD/ReplyMate/actions/runs/37742647444). The same application code is rebuilt and checked again for release attachments. A successful build is not a claim of universal OS, browser, account or microphone compatibility.
 
 ## Earlier public release checks
 
