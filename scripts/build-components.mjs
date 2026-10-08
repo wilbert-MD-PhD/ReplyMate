@@ -22,8 +22,8 @@ const catalog=[];
 for(const def of definitions){try{await stat(path.join(def.sourceDir,def.entry));}catch(e){if(def.id==='whisper-runtime'){console.log('Whisper engine has not been built; catalog will mark it unavailable.');continue;}throw e;}
  const stage=path.join(staging,def.id);await rm(stage,{recursive:true,force:true});await cp(def.sourceDir,stage,{recursive:true,dereference:true,filter:p=>!p.includes(path.sep+'.bin'+path.sep)&&!p.endsWith(path.sep+'.bin')});
  if(def.extraLicense)await cp(def.extraLicense,path.join(stage,'LICENSE'));
- const name=`${def.id}-${def.version}-${platform}.tar.gz`,file=path.join(output,name);await rm(file,{force:true});
- const entry={id:def.id,name:def.name,kind:'runtime',version:def.version,platform,minApp:version,protocol:1,format:'tar.gz',entry:def.entry,dependencies:[],license:def.license,source:def.source,nodeMin:def.nodeMin,signature:'not-code-signed',url:release+name};
- await selfTest(entry,stage);const measured=await pack(stage,file);Object.assign(entry,{bytes:(await stat(file)).size,unpackedBytes:measured.bytes,sha256:await sha256(file)});catalog.push(entry);console.log(`${def.id}: ${(entry.bytes/1e6).toFixed(2)} MB download / ${(entry.unpackedBytes/1e6).toFixed(2)} MB installed`);
+ const name=`${def.id}-${def.version}-${platform}.tar.br`,file=path.join(output,name);await rm(file,{force:true});
+ const entry={id:def.id,name:def.name,kind:'runtime',version:def.version,platform,minApp:version,protocol:1,format:'tar.br',entry:def.entry,dependencies:[],license:def.license,source:def.source,nodeMin:def.nodeMin,signature:'not-code-signed',url:release+name};
+ await selfTest(entry,stage);const measured=await pack(stage,file,entry.format);Object.assign(entry,{bytes:(await stat(file)).size,unpackedBytes:measured.bytes,sha256:await sha256(file)});catalog.push(entry);console.log(`${def.id}: ${(entry.bytes/1e6).toFixed(2)} MB download / ${(entry.unpackedBytes/1e6).toFixed(2)} MB installed`);
 }
 await writeFile(path.join(root,'components/catalog.generated.json'),JSON.stringify(catalog,null,2)+'\n');await writeFile(path.join(output,'catalog-'+platform+'.json'),JSON.stringify(catalog,null,2)+'\n');await writeFile(path.join(output,'SHA256SUMS-'+platform+'.txt'),catalog.map(e=>e.sha256+'  '+new URL(e.url).pathname.split('/').at(-1)).join('\n')+'\n');

@@ -67,7 +67,7 @@ jobs:
           path: installers
       - name: Create checksums
         working-directory: installers
-        run: find . -type f \( -name '*.dmg' -o -name '*.exe' -o -name '*.tar.gz' \) -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS.txt
+        run: find . -type f \( -name '*.dmg' -o -name '*.exe' -o -name '*.tar.br' \) -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS.txt
       - name: Prepare draft release
         env:
           GH_TOKEN: ${{ github.token }}

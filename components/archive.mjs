@@ -1,7 +1,7 @@
 // Minimal deterministic USTAR: only regular files and directories, no links or extensions.
 import {createReadStream,createWriteStream} from 'node:fs';
 import {mkdir,open,lstat,readdir} from 'node:fs/promises';
-import {createGunzip,createGzip} from 'node:zlib';
+import {createGunzip,createGzip,createBrotliCompress,createBrotliDecompress,constants} from 'node:zlib';
 import {Readable} from 'node:stream';
 import {pipeline} from 'node:stream/promises';
 import path from 'node:path';
@@ -9,9 +9,10 @@ export function safeRelative(name){
  if(!name||name.includes('\\')||name.startsWith('/')||/[:\x00-\x1f]/.test(name)||name.split('/').some(x=>!x||x==='.'||x==='..'||/[. ]$/.test(x)||/^(con|prn|aux|nul|com[0-9]|lpt[0-9])(?:\.|$)/i.test(x)))throw Error('组件包含不安全路径');
  return name;
 }
-export async function unpack(archive,dest,limit,signal){
+export async function unpack(archive,dest,limit,signal,format='tar.gz'){
+ if(!['tar.gz','tar.br'].includes(format))throw Error('不支持的组件格式');
  await mkdir(dest,{recursive:true,mode:0o700});
- const source=createReadStream(archive),gunzip=createGunzip();source.on('error',e=>gunzip.destroy(e));source.pipe(gunzip);
+ const source=createReadStream(archive),gunzip=format==='tar.br'?createBrotliDecompress():createGunzip();source.on('error',e=>gunzip.destroy(e));source.pipe(gunzip);
  let buffer=Buffer.alloc(0),remaining=0,padding=0,handle=null,total=0,count=0,ended=false;const names=new Set();
  try{for await(const chunk of gunzip){signal?.throwIfAborted();buffer=Buffer.concat([buffer,chunk]);
   while(buffer.length){
@@ -35,7 +36,8 @@ export async function unpack(archive,dest,limit,signal){
  return {bytes:total,files:count};
  }finally{await handle?.close();source.destroy();gunzip.destroy();}
 }
-export async function pack(dir,archive){
+export async function pack(dir,archive,format='tar.gz'){
+ if(!['tar.gz','tar.br'].includes(format))throw Error('不支持的组件格式');
  let bytes=0,files=0;
  async function* walk(rel=''){
   for(const name of (await readdir(path.join(dir,rel))).sort()){
@@ -51,5 +53,5 @@ export async function pack(dir,archive){
   }
  }
  async function* tar(){yield* walk();yield Buffer.alloc(1024);}
- await pipeline(Readable.from(tar()),createGzip({level:9}),createWriteStream(archive,{flags:'wx'}));return {bytes,files};
+ await pipeline(Readable.from(tar()),format==='tar.br'?createBrotliCompress({params:{[constants.BROTLI_PARAM_QUALITY]:9,[constants.BROTLI_PARAM_LGWIN]:24}}):createGzip({level:9}),createWriteStream(archive,{flags:'wx'}));return {bytes,files};
 }

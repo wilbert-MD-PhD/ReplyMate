@@ -60,7 +60,7 @@ export class ComponentManager{
   const parent=path.join(this.dir,e.kind==='model'?'models':'components',e.id),folder=e.version.slice(0,48)+'-'+randomUUID(),stage=path.join(parent,'.staging-'+folder),dest=path.join(parent,folder);await mkdir(stage,{recursive:true,mode:0o700});
   let switched=false,prepared=false;const previous=this.state.installed[e.id];
   try{task.state='extracting';if(e.format==='raw'){const input=await open(file,'r'),out=await open(path.join(stage,e.entry),'wx',0o600);try{for await(const c of input.createReadStream()){signal.throwIfAborted();await out.write(c);}}finally{await out.close();await input.close();}}
-   else if(e.format==='tar.gz')await unpack(file,stage,e.unpackedBytes,signal);else throw error('不支持的组件格式');
+   else if(['tar.gz','tar.br'].includes(e.format))await unpack(file,stage,e.unpackedBytes,signal,e.format);else throw error('不支持的组件格式');
    task.state='checking';await this.selfTest(e,stage);signal.throwIfAborted();
    const manifest=[];let installedBytes=0;async function scan(dir,rel=''){for(const n of await readdir(dir)){const p=path.join(dir,n),s=await lstat(p);if(s.isSymbolicLink())throw error('组件包含链接');if(s.isDirectory())await scan(p,rel+n+'/');else {manifest.push({path:rel+n,sha256:await sha256(p)});installedBytes+=s.size;}}}await scan(stage);
    await this.beforeSwitch(e.id);prepared=true;await rename(stage,dest);this.state.installed[e.id]={version:e.version,sha256:e.sha256,folder,bytes:installedBytes,manifest,previous:previous?{...previous,previous:undefined}:null};
