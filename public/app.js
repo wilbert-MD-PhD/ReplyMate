@@ -167,7 +167,7 @@ async function init(){try{const s=await(await fetch('/api/status')).json();token
  $('deepDescription').textContent=s.backend==='demo'?'登录后默认使用 GPT-6 Astra 独立生成深度回答。':s.secondaryError||'默认使用 GPT-6 Astra 独立生成，优先回答质量。它可能较慢，竞速结束不会取消深度回答，也不阻塞下一题快答。';
  $('benchResults').textContent=s.backend==='demo'?'演示模式仅显示示例或资料摘录，不调用模型，也不自动翻译未知问题。':'模型来自当前账户列表，访问权限以实际请求为准。';
  $('sources').replaceChildren();for(const src of s.reference){const li=document.createElement('li');li.textContent=src.name;$('sources').append(li);}faq=await(await fetch('/api/faq')).json();faqIndex=createPreparedIndex(faq);$('faqCount').textContent=faq.length+' 条预设问答';$('referenceStatus').textContent=(s.referenceVersion||'')+' · '+faq.length+' 条问答 · '+faqIndex.size+' 种问法已加载';renderFAQ();showAccount(s.auth);if(s.auth?.pending)pollLogin();$('quitApp').hidden=!s.desktop;$('importState').textContent=s.customLibrary?'已载入：'+s.reference.map(x=>x.name).join('、'):'当前使用虚构示例，可直接点击下方预设问题体验。';if(s.backend==='demo')notice('演示模式：不调用 AI。登录后即可生成真实回答。');else if(!configured)notice(s.error);else notice(''); // Startup warm-up is owned by the server and survives page reloads.
- 
+
  }catch(e){notice('连接失败：'+e.message);}render();}
 function showAccount(auth={}){
  $('accountState').textContent=auth.signedIn?(auth.error?'账号已登录，AI 连接未就绪：'+auth.error:'账号已连接，已自动选择可用模型。'):auth.pending?'请在浏览器打开的官方页面完成登录，完成后这里会自动连接。':auth.error||'无需配置。可以先用示例体验，再登录自己的账号。';

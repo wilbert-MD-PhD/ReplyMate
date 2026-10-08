@@ -6,7 +6,7 @@ const root=path.dirname(path.dirname(fileURLToPath(import.meta.url))),source=pat
 const run=(bin,args,opts={})=>{const r=spawnSync(bin,args,{stdio:'inherit',...opts});if(r.error)throw r.error;if(r.status)throw Error(bin+' failed '+r.status);};
 try{await stat(path.join(source,'.git'));}catch{await mkdir(path.dirname(source),{recursive:true});run('git',['clone','--depth','1','--branch','v1.9.5','https://github.com/ggml-org/whisper.cpp.git',source]);}
 const head=spawnSync('git',['rev-parse','HEAD'],{cwd:source,encoding:'utf8'}).stdout.trim();if(head!==commit)throw Error('Whisper source commit mismatch');
-const file=path.join(source,'examples/server/server.cpp');let cpp=await readFile(file,'utf8');
+const file=path.join(source,'examples/server/server.cpp');let cpp=(await readFile(file,'utf8')).replaceAll('\r\n','\n');
 const original='    svr->set_default_headers({{"Server", "whisper.cpp"},\n                             {"Access-Control-Allow-Origin", "*"},\n                             {"Access-Control-Allow-Headers", "content-type, authorization"}});';
 const replacement=`    // ReplyMate: this worker accepts only the local Node adapter, never browser origins.
     svr->set_pre_routing_handler([&](const Request &req, Response &res) {
