@@ -1,5 +1,5 @@
-import {readFile,stat} from 'node:fs/promises';
-import {createHash} from 'node:crypto';
+import {readFile} from 'node:fs/promises';
+import {createHash,randomUUID} from 'node:crypto';
 import {createPreparedIndex} from '../public/prepared.mjs';
 export function validateLibrary(r){
  const fail=message=>{throw Error('Invalid library: '+message);};
@@ -7,7 +7,6 @@ export function validateLibrary(r){
  for(const key of ['context','version'])if(typeof r[key]!=='string'||!r[key].trim())fail(key+' required');
  if(r.context.length>24000)fail('context exceeds 24000 characters');
  for(const key of ['sources','chunks','faq','terms'])if(!Array.isArray(r[key]))fail(key+' must be an array');
- if(r.chunks.length>2000||r.faq.length>1000||r.terms.length>100)fail('too many entries');
  const ids=new Set();
  for(const source of r.sources){if(typeof source.id!=='string'||typeof source.name!=='string'||ids.has(source.id))fail('source id/name required and unique');ids.add(source.id);}
  const chunkIds=new Set();
@@ -27,16 +26,38 @@ export function validateLibrary(r){
  r.stats={chunks:r.chunks.length,prepared:r.faq.filter(f=>f.reviewed).length};return r;
 }
 export async function readLibrary(file){
- if((await stat(file)).size>5000000)throw Error('Library exceeds 5 MB');
  return validateLibrary(JSON.parse(await readFile(file,'utf8')));
 }
 export function compileText(text,name='notes.txt'){
- if(typeof text!=='string'||!text.trim()||Buffer.byteLength(text)>1000000)throw Error('Provide 1 byte–1 MB of UTF-8 text');
+ if(typeof text!=='string'||!text.trim())throw Error('Provide non-empty UTF-8 text');
  if(text.includes('\0'))throw Error('Binary files are not supported. Export Markdown or plain text first.');
  const chunks=[];let title='Presentation notes';
  for(const paragraph of text.split(/\n\s*\n/)){
   const heading=paragraph.match(/^#{1,6}\s+(.+)/);if(heading)title=heading[1];
   for(let i=0;i<paragraph.length;i+=1800)chunks.push({id:'note-'+(chunks.length+1),sourceId:'notes',source:name,title,text:paragraph.slice(i,i+1800)});
  }
- return validateLibrary({version:'custom',context:text.slice(0,12000),terms:[],sources:[{id:'notes',name,sha256:createHash('sha256').update(text).digest('hex')}],chunks,faq:[]});
+ return validateLibrary({version:'custom',contextIndexed:true,context:text.slice(0,12000),terms:[],sources:[{id:'notes',name,sha256:createHash('sha256').update(text).digest('hex')}],chunks,faq:[]});
+}
+
+// Remap every imported ID so independently authored libraries can coexist.
+export function mergeLibraries(libraries){
+ if(!libraries.length)throw Error('请选择至少一份资料');
+ const result={version:'import-'+randomUUID(),contextIndexed:true,context:'',sources:[],chunks:[],faq:[],terms:[]};
+ const contexts=[];
+ for(const input of libraries){
+  const library=validateLibrary(structuredClone(input));
+  const sourceIds=new Map(library.sources.map(source=>[source.id,randomUUID()]));
+  contexts.push(library.context);
+  for(const source of library.sources)result.sources.push({...source,id:sourceIds.get(source.id)});
+  for(const chunk of library.chunks)result.chunks.push({...chunk,id:randomUUID(),sourceId:sourceIds.get(chunk.sourceId)});
+  for(const faq of library.faq)result.faq.push({...faq,id:randomUUID(),sourceIds:faq.sourceIds.map(id=>sourceIds.get(id))});
+  // Keep complete JSON summaries searchable even when the prompt summary is bounded.
+  let sourceId=sourceIds.get(library.sources[0]?.id);
+  if(!library.contextIndexed&&!sourceId){sourceId=randomUUID();result.sources.push({id:sourceId,name:'资料摘要'});}
+  if(!library.contextIndexed)for(let i=0;i<library.context.length;i+=1800)result.chunks.push({id:randomUUID(),sourceId,source:library.sources[0]?.name||'资料摘要',title:'资料摘要',text:library.context.slice(i,i+1800)});
+  for(const term of library.terms)result.terms.push(term);
+ }
+ result.context=contexts.map(text=>text.slice(0,Math.max(1,Math.floor(24000/contexts.length)-2))).join('\n\n').slice(0,24000);
+ result.terms=[...new Set(result.terms)];
+ return validateLibrary(result);
 }

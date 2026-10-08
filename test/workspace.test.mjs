@@ -4,7 +4,7 @@ import {mkdtemp,readFile,readdir,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {zipSync,strToU8} from 'fflate';
-import {parseImport as parseImportCore,saveLibrary,maxImportBytes} from '../src/workspace.mjs';
+import {parseImport as parseImportCore,saveLibrary,parseImports} from '../src/workspace.mjs';
 
 const parseImport=(name,data)=>parseImportCore(name,data,{parser:id=>import('../plugins/'+id+'/index.mjs')});
 const zip=files=>Buffer.from(zipSync(Object.fromEntries(Object.entries(files).map(([k,v])=>[k,strToU8(v)]))));
@@ -23,8 +23,8 @@ test('imports text, clears sample FAQ, backs up replaced data and preserves inva
   assert.equal((await readdir(dir)).some(n=>n.endsWith('.tmp')),false);
  }finally{await rm(dir,{recursive:true,force:true});}
 });
-test('import rejects unsupported, empty, oversized and non-UTF8 files',async()=>{
- for(const [name,data] of [['bad.exe',Buffer.from('bad')],['empty.txt',Buffer.alloc(0)],['big.txt',Buffer.alloc(maxImportBytes+1)],['bad.txt',Buffer.from([0xff])]])await assert.rejects(parseImport(name,data));
+test('import rejects unsupported, empty and non-UTF8 files',async()=>{
+ for(const [name,data] of [['bad.exe',Buffer.from('bad')],['empty.txt',Buffer.alloc(0)],['bad.txt',Buffer.from([0xff])]])await assert.rejects(parseImport(name,data));
 });
 test('imports Word paragraphs and PowerPoint slides without external programs',async()=>{
  const docx=zip({'[Content_Types].xml':'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>','word/document.xml':'<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t>Word project has 24 participants.</w:t></w:r></w:p></w:body></w:document>'});
@@ -47,4 +47,35 @@ test('Office plugin preserves table text and PPT presentation order plus speaker
  const ppt=zip({'ppt/presentation.xml':'<p:presentation xmlns:p="urn:p" xmlns:r="urn:r"><p:sldIdLst><p:sldId r:id="two"/><p:sldId r:id="one"/></p:sldIdLst></p:presentation>','ppt/_rels/presentation.xml.rels':'<Relationships><Relationship Id="one" Target="slides/slide1.xml"/><Relationship Id="two" Target="slides/slide2.xml"/></Relationships>','ppt/slides/slide1.xml':'<a:p xmlns:a="urn:a"><a:r><a:t>second slide</a:t></a:r></a:p>','ppt/slides/slide2.xml':'<a:p xmlns:a="urn:a"><a:r><a:t>first slide</a:t></a:r></a:p>','ppt/slides/_rels/slide2.xml.rels':'<Relationships><Relationship Id="note" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/notesSlide" Target="../notesSlides/notesSlide2.xml"/></Relationships>','ppt/notesSlides/notesSlide2.xml':'<a:p xmlns:a="urn:a"><a:r><a:t>speaker note</a:t></a:r></a:p>'});
  assert.match(await office.extract(ppt,'.pptx'),/first slide[\s\S]*speaker note[\s\S]*second slide/);
  await assert.rejects(office.extract(zip({'word/document.xml':'<!DOCTYPE foo [<!ENTITY x "bad">]><foo>&x;</foo>'}),'.docx'),/实体/);
+});
+
+test('batch import remaps IDs, appends existing FAQ and fails atomically',async()=>{
+ const example=JSON.parse(await readFile(new URL('../examples/reference.json',import.meta.url),'utf8'));
+ const files=['first.txt','second.txt'].map(name=>({name,bytes:async()=>Buffer.from(name+' content')}));
+ const appended=await parseImports(files,{mode:'append',current:example});
+ assert.equal(appended.sources.length,example.sources.length+2);
+ assert.equal(appended.faq.length,example.faq.length);
+ assert.equal(new Set(appended.chunks.map(c=>c.id)).size,appended.chunks.length);
+ assert.ok(appended.faq.every(f=>f.sourceIds.every(id=>appended.sources.some(s=>s.id===id))));
+ const replaced=await parseImports(files,{mode:'replace',current:example});
+ assert.equal(replaced.sources.length,2);assert.equal(replaced.faq.length,0);
+ await assert.rejects(parseImports([...files,{name:'bad.json',bytes:async()=>Buffer.from('{}')}]),/bad.json/);
+ await assert.rejects(parseImports([{name:'duplicate.json',bytes:async()=>Buffer.from(JSON.stringify(example))}],{mode:'append',current:example}),/冲突/);
+ await assert.rejects(parseImports(files,{mode:'invalid'}));
+ await assert.rejects(parseImports([]));
+});
+test('imports text over 20 MB and reloads JSON over 5 MB without entry caps',async()=>{
+ const {readLibrary}=await import('../src/library.mjs');
+ const dir=await mkdtemp(path.join(tmpdir(),'replymate-large-test-'));
+ try{
+  const data=Buffer.from('Large document paragraph. '.repeat(810000));
+  assert.ok(data.length>20_000_000);
+  const library=await parseImport('large.txt',data);
+  assert.ok(library.chunks.length>2000);
+  await saveLibrary(dir,library);
+  const saved=await readLibrary(path.join(dir,'reference.json'));
+  assert.equal(saved.chunks.length,library.chunks.length);
+  const json=await readFile(path.join(dir,'reference.json'));assert.ok(json.length>5_000_000);
+  assert.equal((await parseImport('large.json',json)).chunks.length,library.chunks.length);
+ }finally{await rm(dir,{recursive:true,force:true});}
 });

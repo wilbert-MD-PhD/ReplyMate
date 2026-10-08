@@ -4,7 +4,7 @@ import {existsSync} from 'node:fs';
 import path from 'node:path';
 import {randomBytes} from 'node:crypto';
 import {config,root,dataDir,appDataDir} from './config.mjs';
-import {parseImport,saveLibrary,maxImportBytes} from './workspace.mjs';
+import {parseImports,saveLibrary} from './workspace.mjs';
 import {readLibrary} from './library.mjs';
 import {LocalASR} from './asr.mjs';
 import {retrieve,prepareRetrieval} from './core.mjs';
@@ -65,7 +65,7 @@ selectBridge();
 const ready=config.backend==='demo'?Promise.resolve():ensureCodex().catch(e=>{if(e.code!=='COMPONENT_REQUIRED')authError=e.message;});
 void ready.then(()=>autoWarm());
 const json=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify(data));};
-async function bytes(req,max){let parts=[],size=0;for await(const c of req){size+=c.length;if(size>max)throw Error('Request too large');parts.push(c);}return Buffer.concat(parts);}
+async function bytes(req,max=Infinity){let parts=[],size=0;for await(const c of req){size+=c.length;if(size>max)throw Error('Request too large');parts.push(c);}return Buffer.concat(parts);}
 const publicFiles=new Set(['index.html','app.js','auth-url.mjs','style.css','pcm-worklet.js','logic.mjs','capture.mjs','speech-pipeline.mjs','answer-lanes.mjs','prepared.mjs','session-fetch.mjs','components-ui.mjs','speech-config.mjs']);
 const active=new Map();
 
@@ -141,10 +141,20 @@ const server=http.createServer(async(req,res)=>{
      if(url.pathname==='/api/auth/cancel'){await codex?.cancelLogin();authError=null;return json(res,200,{ok:true});}
      if(url.pathname==='/api/auth/logout'){await codex?.logout();selectBridge();authError=null;queueMicrotask(()=>autoWarm());return json(res,200,{ok:true});}
      if(url.pathname==='/api/quit'){if(!config.desktop)return json(res,404,{error:'Not found'});process.parentPort?.postMessage({type:'quit'});return json(res,200,{ok:true});}
-     const name=decodeURIComponent(req.headers['x-file-name']||'');
-     const library=await parseImport(name,await bytes(req,maxImportBytes),{parser:id=>parserFor(components,id)});
+     const mode=url.searchParams.get('mode')||'replace';
+     let files;
+     if(req.headers['content-type']?.startsWith('multipart/form-data')){
+      const form=await new Request(origin+req.url,{method:'POST',headers:{'Content-Type':req.headers['content-type']},body:req,duplex:'half'}).formData();
+      files=form.getAll('files');
+      if(files.some(file=>typeof file==='string'))throw Error('文件上传格式无效');
+      files=files.map(file=>({name:file.name,bytes:async()=>Buffer.from(await file.arrayBuffer())}));
+     }else{
+      files=[{name:decodeURIComponent(req.headers['x-file-name']||''),bytes:()=>bytes(req)}];
+     }
+     const library=await parseImports(files,{mode,current:existsSync(localLibrary)?reference:null,parser:id=>parserFor(components,id)});
+     prepareRetrieval(library.chunks);
      const result=await saveLibrary(dataDir,library);
-     reference=library;prepareRetrieval(reference.chunks);asr.terms=reference.terms;
+     reference=library;asr.terms=reference.terms;
      demo.close();demo=new DemoBridge(reference);
      if(codex){codex.reference=reference;codex.sessions.clear();}
      selectBridge();resetWarmups();queueMicrotask(()=>autoWarm());return json(res,200,{ok:true,stats:reference.stats,sources:reference.sources,...result});

@@ -18,7 +18,7 @@ let authTimer=null;
 let versionId=null,renderedKey='',audioURL=null;
 const sec=n=>Number.isFinite(n)?(n/1000).toFixed(2)+' s':'—';
 const notice=t=>{$('notice').textContent=t;$('notice').hidden=!t;};
-const center=componentCenter({post,notice,canSwitch:()=>!listening&&!transcribing,onChanged:async snapshot=>{await init();if(pendingImport&&snapshot?.entries.some(e=>e.id===pendingImport.component&&e.state==='installed')){const file=pendingImport.file;pendingImport=null;await importFile(file,true);}}});
+const center=componentCenter({post,notice,canSwitch:()=>!listening&&!transcribing,onChanged:async snapshot=>{await init();if(pendingImport&&snapshot?.entries.some(e=>e.id===pendingImport.component&&e.state==='installed')){const {files,mode}=pendingImport;pendingImport=null;await importFiles(files,true,mode);}}});
 async function post(url,data,signal){return sessionFetch(url,{method:'POST',headers:{'Content-Type':'application/json','X-Session-Token':token},body:JSON.stringify({...data,client}),signal});}
 function showWarm(state={}){const labels={waiting:'预热待就绪',warming:'正在自动预热',ready:'预热完成',error:'预热未完成'};$('warmupStatus').textContent=labels[state.state]||'正在检查预热';$('warmupStatus').dataset.state=state.state||'waiting';$('warmupDetail').textContent=(state.message||'')+(state.total?' · '+state.completed+'/'+state.total+' 个通道':'')+(state.errors?.length?' · '+state.errors.join('；'):'');$('warmupProgress').max=state.total||1;$('warmupProgress').value=state.completed||0;$('retryWarm').disabled=state.state==='warming'||backendMode==='demo';$('warm').disabled=$('retryWarm').disabled;}
 async function warm(){try{showWarm({state:'warming',message:'正在预热所选模型'});const r=await post('/api/warm',{model:$('model').value,secondaryModel:$('deepModel').value});const d=await r.json();showWarm(d);if(!r.ok)throw Error(d.error||d.message);$('backendStatus').textContent=d.model+' · '+d.effort+' · '+d.tier;}catch(e){notice('预热未完成：'+e.message);showWarm({state:'error',message:e.message});}}
@@ -196,16 +196,21 @@ $('loginBtn').onclick=async()=>{
 };
 $('cancelLogin').onclick=async()=>{try{const r=await post('/api/auth/cancel',{});if(!r.ok)throw Error((await r.json()).error);clearTimeout(authTimer);showAccount();}catch(e){notice(e.message);}};
 $('logoutBtn').onclick=async()=>{try{const r=await post('/api/auth/logout',{});if(!r.ok)throw Error((await r.json()).error);await init();}catch(e){notice(e.message);}};
-async function importFile(file,resumed=false){
- if(!file)return;if(file.size>20000000){notice('文件最大 20 MB，请精简后重试。');return;}
- if(!resumed&&store.items.length&&!window.confirm('更换资料后将清空当前页面的问答。请先复制需要保留的回答，旧资料会自动备份。继续导入？'))return;
- $('importBtn').disabled=true;$('importState').textContent='正在读取并保存资料…';
- try{const r=await sessionFetch('/api/library/import',{method:'POST',headers:{'X-Session-Token':token,'X-File-Name':encodeURIComponent(file.name),'Content-Type':'application/octet-stream'},body:file});const d=await r.json();if(!r.ok){if(d.code==='COMPONENT_REQUIRED'){pendingImport={file,component:d.component};$('importState').textContent=d.error+'，安装完成后将继续读取。';await center.open(d.component);return;}throw Error(d.error);}location.reload();}
- catch(e){$('importState').textContent='导入未完成：'+e.message;}
- finally{$('importBtn').disabled=false;$('libraryFile').value='';}
+let importing=false;
+async function importFiles(selected,resumed=false,mode=$('importMode').value){
+ const files=Array.from(selected);if(!files.length||importing)return;
+ if(!resumed&&(mode==='replace'||store.items.length)&&!window.confirm((mode==='replace'?'将替换整个资料库，旧资料会自动备份。':'将追加到现有资料库。')+'导入成功后会清空当前页面问答，请先复制需要保留的回答。继续导入？'))return;
+ importing=true;pendingImport=null;$('importBtn').disabled=true;$('importMode').disabled=true;$('importState').textContent='正在读取 '+files.length+' 份资料，全部成功后保存…';
+ try{
+  const body=new FormData();for(const file of files)body.append('files',file,file.name);
+  const r=await sessionFetch('/api/library/import?mode='+mode,{method:'POST',body});const d=await r.json();
+  if(!r.ok){if(d.code==='COMPONENT_REQUIRED'){pendingImport={files,mode,component:d.component};$('importState').textContent=d.error+'，安装完成后将继续整批导入。';await center.open(d.component);return;}throw Error(d.error);}
+  location.reload();
+ }catch(e){$('importState').textContent='导入未完成，原资料库已保留：'+e.message;}
+ finally{importing=false;$('importBtn').disabled=false;$('importMode').disabled=false;$('libraryFile').value='';}
 }
-$('importBtn').onclick=()=>$('libraryFile').click();$('libraryFile').onchange=()=>importFile($('libraryFile').files[0]);
-$('importZone').ondragover=e=>{e.preventDefault();$('importZone').classList.add('dragover');};$('importZone').ondragleave=()=>$('importZone').classList.remove('dragover');$('importZone').ondrop=e=>{e.preventDefault();$('importZone').classList.remove('dragover');if(e.dataTransfer.files.length!==1){notice('请每次导入一份资料。');return;}importFile(e.dataTransfer.files[0]);};
+$('importBtn').onclick=()=>$('libraryFile').click();$('libraryFile').onchange=()=>importFiles($('libraryFile').files);
+$('importZone').ondragover=e=>{e.preventDefault();$('importZone').classList.add('dragover');};$('importZone').ondragleave=()=>$('importZone').classList.remove('dragover');$('importZone').ondrop=e=>{e.preventDefault();$('importZone').classList.remove('dragover');void importFiles(e.dataTransfer.files);};
 $('quitApp').onclick=async()=>{const r=await post('/api/quit',{});if(r.ok){document.body.textContent='答伴已退出，可以关闭此页面。';}};
 $('listen').onclick=()=>listening?stopListening():startListening();$('finish').onclick=()=>seal(true);$('answer').onclick=()=>{if($('question').value.trim())seal(true);else notice('请先输入问题，或等转写文字出现。');};$('clear').onclick=()=>{$('question').value='';capture.discard();pendingSegment=null;recognizer?.commit();};
 $('prev').onclick=()=>{store.move(-1);versionId=null;render();};$('next').onclick=()=>{store.move(1);versionId=null;render();};$('live').onclick=()=>{store.live();versionId=null;render();};$('retry').onclick=()=>retry();$('verify').onclick=()=>retry(true);$('cancel').onclick=()=>{const q=selected(),a=q?.attempts.find(a=>a.id===versionId)||q?.attempts.at(-1);if(!a)return;lanes.cancel(attemptKey(q,a));if(store.running?.qid===q.id&&store.running.aid===a.id)activeController?.abort();if(a.state==='queued'){store.jobs=store.jobs.filter(j=>j.aid!==a.id);a.state='stopped';}render();};$('editBtn').onclick=()=>{$('editPanel').hidden=!$('editPanel').hidden;$('editText').value=selected()?.attempts.at(-1).question||'';};$('saveEdit').onclick=()=>{if($('editText').value.trim()){retry(false,$('editText').value.trim());$('editPanel').hidden=true;}};$('retranscribe').onclick=async()=>{const q=selected();if(!q?.meta.audioURL)return;try{notice('正在重新转写这一题的原音…');const blob=q.meta.audioBlob;if(!blob)throw Error('请重新录制这一题，旧页面没有保留可复核的音频对象');const r=await sessionFetch('/api/transcribe',{method:'POST',headers:{'X-Session-Token':token,'X-ASR-Quality':'accurate','Content-Type':'audio/wav'},body:blob});const d=await r.json();if(!r.ok)throw Error(d.error);q.meta.rechecked=d.text;store.select(q.id);$('editPanel').hidden=false;$('editText').value=d.text;notice('再次转写已放入修改框，请核对后点击重答。');render();}catch(e){notice(e.message);}};

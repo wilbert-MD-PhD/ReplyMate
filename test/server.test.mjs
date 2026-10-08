@@ -41,6 +41,19 @@ test('clean demo server: paired streams, session auth, private-file isolation an
    assert.equal((await send('bad.json','{}')).status,400);
    assert.match(await readFile(path.join(dataDir,'reference.json'),'utf8'),/12 teams/);
    const answer=await(await post('/api/answer',{question:'Tell me about the study with 12 teams',client:'new'})).text();assert.match([...answer.matchAll(/^data: (.+)$/gm)].map(m=>JSON.parse(m[1]).text||'').join(''),/12 teams/);
+   const batch=async(mode,entries)=>{
+    const body=new FormData();for(const [name,text] of entries)body.append('files',new Blob([text]),name);
+    return fetch(origin+'/api/library/import?mode='+mode,{method:'POST',headers:{Origin:origin,'X-Session-Token':status.token},body});
+   };
+   assert.equal((await batch('append',[['a.txt','Unique alpha'],['b.txt','Unique beta']])).status,200);
+   let stored=JSON.parse(await readFile(path.join(dataDir,'reference.json'),'utf8'));
+   assert.equal(stored.sources.length,3);assert.match(JSON.stringify(stored),/12 teams/);
+   const before=await readFile(path.join(dataDir,'reference.json'),'utf8');
+   assert.equal((await batch('replace',[['valid.txt','Must not commit'],['invalid.json','{}']])).status,400);
+   assert.equal(await readFile(path.join(dataDir,'reference.json'),'utf8'),before);
+   assert.equal((await batch('replace',[['a.txt','Replacement alpha'],['b.txt','Replacement beta']])).status,200);
+   stored=JSON.parse(await readFile(path.join(dataDir,'reference.json'),'utf8'));
+   assert.equal(stored.sources.length,2);assert.doesNotMatch(JSON.stringify(stored),/12 teams/);
    assert.equal((await post('/api/auth/login',{}, {'X-Session-Token':'stale'})).status,403);
    assert.equal((await(await fetch(origin+'/api/auth/status')).json()).signedIn,false);
   });

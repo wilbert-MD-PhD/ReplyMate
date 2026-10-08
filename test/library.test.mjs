@@ -46,5 +46,8 @@ test('import CLI supports paths with spaces and backs up the previous library',a
   const source=path.join(temp,'my notes.md');await writeFile(source,'# Example\n\nFirst unique text.');
   for(const value of ['First unique text.','Second new text.']){await writeFile(source,value);const r=spawnSync(process.execPath,[path.join(temp,'scripts/import-library.mjs'),source],{encoding:'utf8'});assert.equal(r.status,0,r.stderr);}
   const result=JSON.parse(await readFile(path.join(temp,'user-data/reference.json'),'utf8'));assert.equal(result.context,'Second new text.');assert.equal(result.faq.length,0);
+  const extra=path.join(temp,'extra.txt');await writeFile(extra,'Additional unique material.');
+  const appended=spawnSync(process.execPath,[path.join(temp,'scripts/import-library.mjs'),'--append',extra],{encoding:'utf8'});assert.equal(appended.status,0,appended.stderr);
+  const merged=JSON.parse(await readFile(path.join(temp,'user-data/reference.json'),'utf8'));assert.equal(merged.sources.length,2);assert.match(JSON.stringify(merged),/Second new text/);assert.match(JSON.stringify(merged),/Additional unique material/);
  }finally{await rm(temp,{recursive:true,force:true});}
 });

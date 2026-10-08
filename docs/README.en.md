@@ -2,6 +2,8 @@
 
 **Prepare for meeting Q&A and English interviews with your own reference material.**
 
+**First-text target: display the first character of the quick answer within 3 seconds of submitting a question.**
+
 See a quick answer first while an independent deep answer develops. ReplyMate supports speech input, Chinese question translations and session history. The interface is in Chinese; answers currently default to English.
 
 [Download v2.5.3](#download) · [Quick start](#quick-start) · [中文说明](../README.md) · [Release notes](https://github.com/wilbert-MD-PhD/ReplyMate/releases/tag/v2.5.3)
@@ -71,7 +73,7 @@ Only readable text is extracted. OCR, chart interpretation and formula interpret
 
 **Can I import several documents? What happens when I replace material?**
 
-Import one file at a time, up to 20 MB. Replacing material backs up the previous library and clears the current page's Q&A. Copy any answers you need first. Document imports also clear the sample prepared answers. See [formats, limits and prepared answers](library-format.md).
+Select or drop multiple files with no application-imposed file count or size limit. Append to the current library (default), or replace it. The whole batch is validated before saving and backing up the previous library; any failure preserves the existing library. Successful imports clear the current page's Q&A, so copy answers you need first. The first import excludes demo material; appending preserves existing prepared answers. See [formats, limits and prepared answers](library-format.md).
 
 **Can a Chinese question retrieve English reference excerpts?**
 

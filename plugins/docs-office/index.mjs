@@ -6,7 +6,7 @@ function parse(xml,handlers){if(/<!DOCTYPE|<!ENTITY/i.test(xml))throw Error('文
 function text(xml,word=false){let out='',capture=0;parse(xml,{opentag:n=>{if(n.local==='t')capture++;if(n.local==='tab')out+='\t';if(n.local==='br')out+='\n';},text:t=>{if(capture)out+=t;},closetag:n=>{if(n.local==='t')capture--;if(n.local==='p')out+='\n';if(word&&n.local==='tc')out+='\t';if(word&&n.local==='tr')out+='\n';}});return out;}
 function attrs(xml,tag){const list=[];parse(xml,{opentag:n=>{if(n.local===tag){const a={};for(const v of Object.values(n.attributes))a[v.name]=v.value;list.push(a);}}});return list;}
 export async function extract(data,ext){
- let total=0,count=0;const files=unzipSync(data,{filter:f=>{if(++count>20000||(total+=f.originalSize)>100_000_000)throw Error('文档解包超过安全上限');return /\.xml$|\.rels$/.test(f.name);}});
+ const files=unzipSync(data,{filter:f=>/\.xml$|\.rels$/.test(f.name)});
  const xml=name=>{if(!files[name])throw Error('文档缺少 '+name);return strFromU8(files[name]);};
  if(ext==='.docx')return text(xml('word/document.xml'),true);
  if(ext!=='.pptx')throw Error('文档格式不支持');
