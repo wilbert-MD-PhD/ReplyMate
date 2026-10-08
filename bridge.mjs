@@ -6,30 +6,51 @@ import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {selectExcerpts} from './core.mjs';
 import {config} from './config.mjs';
+import {isLoginURL} from './auth-url.mjs';
 export function selectEffort(model,requested=''){const supported=model.efforts||[];if(requested&&!supported.includes(requested))throw Error('Unsupported effort '+requested+' for '+model.id);return requested||['none','minimal','low'].find(e=>supported.includes(e))||model.defaultEffort||supported[0];}
 export class CodexBridge extends EventEmitter {
-  constructor(reference){super();this.reference=reference;this.pending=new Map();this.sessions=new Map();this.seq=0;this.active=new Map();this.ready=this.init();}
+  constructor(reference){super();this.reference=reference;this.pending=new Map();this.sessions=new Map();this.seq=0;this.active=new Map();this.models=[];this.account=null;this.login=null;this.connected=this.init();this.ready=this.connected.then(()=>this.refreshAccount()).catch(e=>{this.bootFailed=true;throw e;});}
   async init(){
     this.cwd=await mkdtemp(path.join(tmpdir(),'replymate-'));
-    this.child=spawn(config.codexBin,['app-server','--listen','stdio://','-c','features.shell_tool=false','-c','features.unified_exec=false','-c','features.code_mode=false','-c','features.apply_patch_freeform=false','-c','features.multi_agent=false','-c','features.apps=false','-c','web_search="disabled"','-c','project_doc_max_bytes=0'],{cwd:this.cwd,stdio:['pipe','pipe','pipe']});
+    if(this.closed){await rm(this.cwd,{recursive:true,force:true});throw Error('Codex 已关闭');}
+    this.child=spawn(config.codexBin,['app-server','--listen','stdio://','-c','features.shell_tool=false','-c','features.unified_exec=false','-c','features.code_mode=false','-c','features.apply_patch_freeform=false','-c','features.multi_agent=false','-c','features.apps=false','-c','web_search="disabled"','-c','project_doc_max_bytes=0'],{cwd:this.cwd,env:{...process.env,...(config.codexHome?{CODEX_HOME:config.codexHome}:{})},windowsHide:true,stdio:['pipe','pipe','pipe']});
     this.child.stderr.on('data',()=>{});
-    this.child.stdin.on('error',e=>this.fail(e));this.child.on('error',()=>this.fail(new Error('无法启动 Codex。请安装 CLI，并检查 CODEX_BIN。')));this.child.on('exit',()=>this.fail(new Error('Codex 服务已退出，请重新启动助手。')));
+    this.child.stdin.on('error',e=>this.fail(e));this.child.on('error',()=>this.fail(new Error('AI 组件未能启动。请重新打开答伴，或下载完整桌面安装包。')));this.child.on('exit',()=>{if(!this.closed)this.fail(new Error('AI 服务已退出，请点击登录按钮重新连接。'));});
     createInterface({input:this.child.stdout}).on('line',line=>{try{this.receive(JSON.parse(line));}catch{}});
-    await this.rpc('initialize',{clientInfo:{name:'replymate',version:'2.3.1'},capabilities:{experimentalApi:true}});
+    await this.rpc('initialize',{clientInfo:{name:'replymate',version:'2.4.0'},capabilities:{experimentalApi:true}});
     this.child.stdin.write(JSON.stringify({method:'initialized'})+'\n');
-    const account=await this.rpc('account/read',{});
-    if(!account.account)throw new Error('请先运行 codex login 完成登录。');
+  }
+  async refreshAccount(){
+    await this.connected;
+    const {account}=await this.rpc('account/read',{});
+    const changed=JSON.stringify(account)!==JSON.stringify(this.account);this.account=account;
+    if(!account){this.models=[];this.sessions.clear();return [];}
+    if(this.models.length&&!changed)return this.models;
+    this.sessions.clear();
     const catalog=[];let cursor;
     do{const page=await this.rpc('model/list',{includeHidden:false,limit:100,...(cursor?{cursor}:{})});catalog.push(...page.data);cursor=page.nextCursor;}while(cursor);
     this.models=catalog.filter(m=>!m.hidden&&(!m.inputModalities||m.inputModalities.includes('text'))).map(m=>{const info={id:m.model,hidden:!!m.hidden,isDefault:!!m.isDefault,defaultEffort:m.defaultReasoningEffort,efforts:(m.supportedReasoningEfforts||[]).map(e=>e.reasoningEffort)};return {...info,effort:selectEffort(info)};});
     if(!this.models.length)throw new Error('订阅未返回可用模型。');
     return this.models;
   }
+  async startLogin(){
+    await this.connected;
+    if(this.login)return this.login;
+    const result=await this.rpc('account/login/start',{type:'chatgpt'});
+    if(!isLoginURL(result.authUrl))throw Error('登录服务返回了无法识别的地址');
+    this.login={loginId:result.loginId,authUrl:result.authUrl};this.loginError=null;return this.login;
+  }
+  async cancelLogin(){
+    if(this.login)await this.rpc('account/login/cancel',{loginId:this.login.loginId});
+    this.login=null;
+  }
+  async logout(){await this.cancelLogin();await this.rpc('account/logout',{});this.account=null;this.models=[];this.sessions.clear();}
   fail(e){this.lastError=e;for(const p of this.pending.values()){clearTimeout(p.timer);p.reject(e);}this.pending.clear();this.emit('fatal',e);}
   rpc(method,params){if(this.lastError||this.closed)return Promise.reject(this.lastError||new Error('Codex 已关闭'));return new Promise((resolve,reject)=>{const id=++this.seq;const timer=setTimeout(()=>{this.pending.delete(id);reject(new Error('Codex 请求超时: '+method));},20000);this.pending.set(id,{resolve,reject,timer});this.child.stdin.write(JSON.stringify({id,method,params})+'\n');});}
   receive(m){
     if(m.id!==undefined&&this.pending.has(m.id)){const p=this.pending.get(m.id);clearTimeout(p.timer);this.pending.delete(m.id);m.error?p.reject(new Error(m.error.message)):p.resolve(m.result);return;}
     if(m.id!==undefined&&m.method){this.child.stdin.write(JSON.stringify({id:m.id,error:{code:-32601,message:'This assistant only answers questions; tool requests are disabled.'}})+'\n');return;}
+    if(m.method==='account/login/completed'){this.login=null;this.loginError=m.params?.success?null:(m.params?.error||'登录未完成，请重试');}
     this.emit('notification',m);
   }
   async session(model,client,effort,task='answer'){
@@ -97,5 +118,5 @@ export class CodexBridge extends EventEmitter {
     if(!s.primed){s.priming=this.answer({model,client,task,question:task==='translation'?'[WARMUP] Reply only 就绪。':'[WARMUP] Prepare to answer questions using the reference. Reply only Ready.'},()=>{});s.primed=s.priming.catch(e=>{s.primed=null;throw e;}).finally(()=>{s.priming=null;});}
     await s.primed;return s;
   }
-  close(){this.closed=true;this.child?.kill();if(this.cwd)rm(this.cwd,{recursive:true,force:true}).catch(()=>{});}
+  close(){this.closed=true;for(const p of this.pending.values()){clearTimeout(p.timer);p.reject(new Error('Codex 已关闭'));}this.pending.clear();this.child?.kill();if(this.cwd)rm(this.cwd,{recursive:true,force:true}).catch(()=>{});}
 }

@@ -10,3 +10,6 @@ logs/
 .DS_Store
 Thumbs.db
 coverage/
+
+build/codex/
+build/codex-version.txt

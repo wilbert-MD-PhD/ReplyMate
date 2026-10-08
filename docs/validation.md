@@ -1,5 +1,15 @@
 # Validation scope
 
+## 2.4.0 desktop release
+
+Local verification on 2026-10-08 passed 62 automated tests, including account lifecycle and login URL validation, local DOCX/PPTX/PDF extraction, backup preservation, authenticated imports and immediate reference replacement. Browser checks covered the new first-run page, file-picker import and automatic reload, paired demo answers, and opening/cancelling the official login flow in an isolated account directory. No maintainer credentials are included in builds.
+
+The desktop workflow builds macOS arm64, macOS x64 and Windows x64 separately. Each packaged executable must pass a clean-account startup check before its installer is uploaded: the bundled runtime starts the server on an available loopback port, the bundled Codex initializes without a login, and the page and demo load. The check excludes developer runtimes from PATH. These checks do not complete a user's account authorization or measure real microphone recognition.
+
+Installers are currently unsigned and are not Apple-notarized. Cross-platform build and smoke-test results are recorded in GitHub Actions. A successful build is not a claim of universal OS, browser, account or microphone compatibility.
+
+## Earlier public release checks
+
 The checks below were recorded on 2026-10-08 for the 2.3.0 public release, using fictional example data. Local verification passed 54 automated tests. Real Codex requests completed both English answer lanes and the Chinese translation for an unprepared question. Browser checks verified prepared answers, a second manual question, editing/retrying, and selecting the retained original answer version. The 2.3.1 release updates the project name, links and package filenames.
 
 - Automated tests cover capture continuity, question queues, history, retry isolation, paired lanes,

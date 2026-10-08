@@ -1,19 +1,22 @@
 {
   "name": "replymate",
-  "version": "2.3.1",
-  "description": "ReplyMate（答伴）｜会议问答神器 · 面试答题神器。Paired answers, prepared responses and optional speech capture.",
+  "version": "2.4.0",
+  "description": "ReplyMate（答伴）｜会议问答助手 · 面试答题神器。Paired answers, prepared responses and optional speech capture.",
   "type": "module",
   "private": true,
   "license": "MIT",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.13.0"
   },
   "scripts": {
     "start": "node server.mjs",
     "test": "node --test test/*.test.mjs",
     "import": "node scripts/import-library.mjs",
     "check": "node scripts/check-release.mjs",
-    "package": "node scripts/package-release.mjs"
+    "package": "node scripts/package-release.mjs",
+    "desktop": "electron .",
+    "desktop:prepare": "node scripts/prepare-desktop.mjs",
+    "desktop:build": "npm run desktop:prepare && electron-builder --publish never"
   },
   "repository": {
     "type": "git",
@@ -25,5 +28,15 @@
     "interview-preparation",
     "qa",
     "speech-recognition"
-  ]
+  ],
+  "main": "desktop/main.cjs",
+  "author": "wilbert",
+  "dependencies": {
+    "officeparser": "8.1.1"
+  },
+  "devDependencies": {
+    "@openai/codex": "0.161.0",
+    "electron": "44.7.0",
+    "electron-builder": "26.15.3"
+  }
 }

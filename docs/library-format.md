@@ -1,7 +1,7 @@
 # 自定义资料与预设问答
 
-最快的方法是 `npm run import -- "./notes.md"`。需要预设问答时，复制
-`examples/reference.json` 到本机 `user-data/my-library.json`，修改后导入。
+点击页面上方“选择资料”即可导入文档。需要预设问答时，复制
+`examples/reference.json` 到本机 `user-data/my-library.json`，修改后通过页面导入。
 不要直接把私人资料写入公开的 `examples/`。
 
 ```json
@@ -34,5 +34,5 @@
 npm run import -- "./user-data/my-library.json"
 ```
 
-每次重新导入会验证格式并备份旧资料。服务运行期间保持当前知识库快照，重启后切换到新资料。
+通过页面导入会验证格式、备份旧资料并立即应用。下方命令行方式供源码使用者使用，需重启服务后生效。
 工具只能检查结构和来源 ID，无法替代人工核对事实。资料更新后请重新核对相关预设。

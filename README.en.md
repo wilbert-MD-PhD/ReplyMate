@@ -1,63 +1,49 @@
 # ReplyMate · 答伴
 
-**会议问答神器 · 面试答题神器** — your companion for meeting Q&A and interview practice.
+**会议问答助手 · 面试答题神器** — your companion for meeting Q&A and interview practice.
 
-ReplyMate is an open-source assistant for English presentation Q&A, interview preparation,
-and practice. Import your own reference material to generate two spoken-style English answers
-and see a Chinese translation of each question.
+Prepare spoken-style English answers from your own reference material. ReplyMate offers two independently streamed answers, Chinese question translations, prepared responses and answer history. The interface is in Chinese.
 
-The app runs in your local browser with a Chinese interface. It supports typed questions,
-speech capture, prepared responses, answer history, and editing and retrying questions.
-The two answers have independent queues and stream as they are generated, so you can compare them.
+[Download the desktop app](https://github.com/wilbert-MD-PhD/ReplyMate/releases/latest) · [中文说明](README.md)
 
-[中文说明](README.md) · [Download](https://github.com/wilbert-MD-PhD/ReplyMate/releases/latest)
+## Download and open
 
-## Quick start
+Choose the macOS DMG for Apple Silicon or Intel, or the Windows x64 installer. On Mac, drag ReplyMate into Applications and open it. On Windows, run the installer; the app opens automatically and adds a desktop shortcut.
 
-Install [Node.js 22+](https://nodejs.org/), download and extract the release ZIP,
-then run `npm start`. Open [http://127.0.0.1:8780](http://127.0.0.1:8780).
-There are no third-party npm runtime dependencies or frontend build steps.
-Launchers: `start.command` (macOS), `sh start.sh` (Linux), `start.bat` (Windows demo).
+ReplyMate opens in your default browser. The runtime and Codex component are bundled: **no Node.js installation, terminal commands or configuration files are needed**.
 
-The default **demo backend does not generate AI answers**. It uses a fictional energy dashboard example.
-To enable AI, install [Codex CLI](https://developers.openai.com/codex/cli/), run `codex login`,
-copy `.env.example` to `.env`, set `QA_BACKEND=codex`, and restart.
-For the Codex backend on Windows, use WSL for the whole application.
-The [App Server protocol](https://learn.chatgpt.com/docs/app-server) provides the account model catalog and streamed answers.
+Try the fictional sample immediately without signing in. To use AI with your material:
 
-Models are discovered from your account. The second answer defaults to a separate session of the same model.
-Set `QA_FAST_MODEL` and `QA_SECONDARY_MODEL` to catalog model IDs to choose different ones.
-Supported efforts can be set with `QA_FAST_EFFORT` / `QA_SECONDARY_EFFORT`.
-Two answers, translations, warm-ups and model races consume your own quota.
-A catalog entry is not proof of inference access; a successful request verifies access for that request.
+1. Click **登录 ChatGPT** and authorize on the official sign-in page. The app connects automatically and remembers your session.
+2. Click **选择资料**, or drop a file into the import area.
+3. Type an English question and click **立即回答**. Voice capture is available in supported browsers.
 
-## Your reference material
+These packages do not yet have developer certificate signing or Apple notarization. Your operating system may show a first-run security prompt; managed computers may block unsigned apps.
 
-```sh
-npm run import -- "./my-notes.md"
-```
+## Import your material
 
-Accepts UTF-8 Markdown/text (up to 1 MB) or a [library JSON](docs/library-format.md) (up to 5 MB).
-Export Office/PDF contents to text first; manually transcribe figures or formulas.
-Imported data goes into ignored `user-data/`, with backups on replacement. Restart and refresh to load it.
-A text import clears all example prepared answers. Set `reviewed: true` only for answers you have checked.
-The summary uses the first 12,000 characters plus up to three keyword-retrieved excerpts per question.
+Accepts DOCX, PPTX, PDF, Markdown, TXT and [reference-library JSON](docs/library-format.md). Import one file at a time, up to 20 MB. Extracted text is limited to 1 MB and library JSON to 5 MB.
 
-## Speech and privacy
+Documents are parsed locally and applied immediately. Text extraction does not recognize scanned images or interpret charts. A failed import preserves the current library. Replacing material backs up the old library and reloads the page, clearing the current Q&A. Copy any answers you need first.
 
-Manual input works without a microphone. Browser speech recognition depends on browser support
-and may send audio to the browser vendor. The demo answer backend alone is offline.
-Optional local recognition requires your own [whisper.cpp](https://github.com/ggml-org/whisper.cpp)
-server and model, configured through `WHISPER_BIN` and `WHISPER_MODEL`.
-Local speech models and binaries are installed separately. Imported reference material is stored in
-`user-data/` on your computer, where you can back it up or delete it.
+Document imports clear sample prepared responses. For your own prepared responses, import a library JSON and mark only checked answers as `reviewed: true`. The summary uses the first 12,000 text characters, with up to three keyword-matched excerpts per question. Retrieval currently uses English keywords.
 
-The web server binds only to loopback. Questions/audio stay in page memory and disappear on refresh.
-In Codex mode, questions, recent questions, ASR alternatives and reference excerpts/context go to your configured model service.
-Codex/provider retention rules still apply. Do not deploy this local tool directly on the public internet.
+## Accounts, speech and privacy
+
+AI requires Codex access and available quota on your account. Answers, translations, optional warm-ups and model races use your quota. The app selects an available catalog model automatically; individual inference access still depends on your account.
+
+The desktop app stores references, backups and account state in its own application-data directory. It uses the bundled official [Codex App Server](https://learn.chatgpt.com/docs/app-server) for authentication and inference. You do not enter passwords or paste tokens into ReplyMate.
+
+The local server uses a dynamically assigned loopback port. Q&A and recordings stay in page memory and disappear when the page closes or reloads. In AI mode, questions, recent questions, transcription alternatives and relevant reference context are sent to the model service, whose retention rules apply.
+
+Browser speech recognition depends on browser and device support and may send audio to the browser vendor. Try Chrome or Edge; typing is always available. The demo answer backend is offline, but browser speech capture may not be.
+
+Use **退出答伴** at the bottom of the page or the tray/menu-bar menu to quit the app. Closing the browser tab leaves the app running. Signing out of ReplyMate does not delete your reference material.
 
 ## Development
 
-`npm ci --ignore-scripts`, `npm test`, `npm run check`, `npm run package`.
-Release packages use an explicit file allowlist and include SHA-256 checksums.
-See [validation scope](docs/validation.md). MIT licensed; separately installed dependencies and models retain their own terms.
+For source use, install Node.js 22.13+, run `npm ci --ignore-scripts`, then `npm start`. Install Codex CLI to enable the sign-in button in a source checkout. Desktop downloads already include it.
+
+Run `npm test`, `npm run check`, and `npm run package` for source verification and packaging. Run `node node_modules/electron/install.js`, then `npm run desktop:build` for a desktop build. CI builds and smoke-tests macOS arm64, macOS x64 and Windows x64 separately.
+
+See [development notes](docs/development.md), [validation scope](docs/validation.md) and [third-party notices](THIRD_PARTY_NOTICES.md). MIT licensed; bundled components and services retain their own licenses and terms.

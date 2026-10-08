@@ -1,0 +1,56 @@
+appId: org.replymate.desktop
+productName: ReplyMate
+copyright: Copyright © 2026 wilbert
+asar: true
+directories:
+  output: dist/desktop
+  buildResources: desktop
+files:
+  - desktop/main.cjs
+  - desktop/icon.png
+  - public/**
+  - config.mjs
+  - library.mjs
+  - workspace.mjs
+  - auth-url.mjs
+  - server.mjs
+  - bridge.mjs
+  - demo.mjs
+  - core.mjs
+  - asr.mjs
+  - examples/**
+  - package.json
+  - LICENSE
+  - THIRD_PARTY_NOTICES.md
+extraResources:
+  - from: build/codex
+    to: codex
+  - from: build/codex-version.txt
+    to: codex-version.txt
+  - from: desktop/CODEX-LICENSE
+    to: CODEX-LICENSE
+mac:
+  category: public.app-category.productivity
+  icon: desktop/icon.icns
+  identity: null
+  target:
+    - dmg
+  artifactName: ReplyMate-${version}-macOS-${arch}.${ext}
+  extendInfo:
+    NSMicrophoneUsageDescription: 答伴通过浏览器录音，将英文提问转换为文字。
+win:
+  icon: desktop/icon.ico
+  target:
+    - nsis
+  artifactName: ReplyMate-${version}-Windows-${arch}-Setup.${ext}
+nsis:
+  oneClick: true
+  perMachine: false
+  createDesktopShortcut: true
+  runAfterFinish: true
+linux:
+  icon: desktop/icon.png
+  target:
+    - AppImage
+  category: Office
+  artifactName: ReplyMate-${version}-Linux-${arch}.${ext}

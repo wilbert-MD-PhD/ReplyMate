@@ -1,3 +1,4 @@
+import {isLoginURL} from './auth-url.mjs';
 import {sessionFetch,setSessionToken} from './session-fetch.mjs';
 import {QuestionStore,normalize,hasQuestionContent} from './logic.mjs';
 import {CaptureSession,BrowserTranscriber} from './capture.mjs';
@@ -9,6 +10,7 @@ const $=id=>document.getElementById(id),store=new QuestionStore(),client=crypto.
 let secondaryModel='',backendMode='demo';
 let token='',configured=false,faq=[],faqIndex=new Map(),terms=[],warming=Promise.resolve(),activeController=null,pumping=false;
 let listening=false,stream=null,context=null,node=null,transcribing=0,lastSubmitted='',lastSubmitTime=0,processing=Promise.resolve(),recognizer=null,recognizerState='stopped',lastAudioPacket=null,audioReceivedMs=0,pendingSegment=null;
+let authTimer=null;
 let versionId=null,renderedKey='',audioURL=null;
 const sec=n=>Number.isFinite(n)?(n/1000).toFixed(2)+' s':'—';
 const notice=t=>{$('notice').textContent=t;$('notice').hidden=!t;};
@@ -30,7 +32,7 @@ function startCompanions(q,a){
  function launch(lane,target,url,data){
   lanes.enqueue(lane,key,async signal=>{
    target.state='running';const start=performance.now();let done=false;render();
-   if(!configured)throw Error('后端未连接，请检查配置后重启');
+   if(!configured)throw Error('连接未就绪，请点击顶部的登录按钮重新连接');
    const r=await post(url,{question:a.question,previousQuestions:context,...data},signal);
    await consume(r,(event,d)=>{
     if(event==='error')throw Error(d.error);
@@ -147,10 +149,41 @@ function showASR(asr){$('asrStatus').textContent=asr.state==='ready'?'本地 Whi
 async function init(){try{const s=await(await fetch('/api/status')).json();token=s.token;setSessionToken(token);configured=s.configured;secondaryModel=s.secondaryModel;backendMode=s.backend;terms=s.terms||[];
  $('connection').textContent=configured?(s.backend==='demo'?'离线演示 · 无 AI 生成':'Codex 已连接'):'连接失败';$('backendStatus').textContent=s.error||s.mode;showASR(s.asr);if(s.asr.state==='disabled')$('speechMode').value='fast';
  $('model').replaceChildren(...s.models.map(m=>new Option(m.id+' · '+m.effort,m.id)));if(s.raceModels.length>1)$('model').add(new Option('快速模型竞速 · 首个响应','race'));$('model').value=s.fastModel;$('raceDescription').textContent='快速模型：'+s.fastModel+'。第二回答：'+s.secondaryModel+'。第二回答独立排队，属于另一份候选答案，不等于事实核验。';
- $('benchResults').textContent=s.backend==='demo'?'演示模式仅显示示例或资料摘录，不调用模型，也不自动翻译未知问题。':'模型来自当前账户列表，访问权限以实际请求为准。此版本不附带他人账户的速度测试数据。';
- for(const src of s.reference){const li=document.createElement('li');li.textContent=src.name;$('sources').append(li);}faq=await(await fetch('/api/faq')).json();faqIndex=createPreparedIndex(faq);$('faqCount').textContent=faq.length+' 条预设问答';$('referenceStatus').textContent=(s.referenceVersion||'')+' · '+faq.length+' 条问答 · '+faqIndex.size+' 种问法已加载';renderFAQ();if(s.backend==='demo')notice('当前为离线演示。启用真实 AI：安装并登录 Codex，在 .env 设置 QA_BACKEND=codex 后重启。');else if(!configured)notice(s.error); // Warm-up is explicit to avoid consuming quota on page load.
+ $('benchResults').textContent=s.backend==='demo'?'演示模式仅显示示例或资料摘录，不调用模型，也不自动翻译未知问题。':'模型来自当前账户列表，访问权限以实际请求为准。';
+ $('sources').replaceChildren();for(const src of s.reference){const li=document.createElement('li');li.textContent=src.name;$('sources').append(li);}faq=await(await fetch('/api/faq')).json();faqIndex=createPreparedIndex(faq);$('faqCount').textContent=faq.length+' 条预设问答';$('referenceStatus').textContent=(s.referenceVersion||'')+' · '+faq.length+' 条问答 · '+faqIndex.size+' 种问法已加载';renderFAQ();showAccount(s.auth);if(s.auth?.pending)pollLogin();$('quitApp').hidden=!s.desktop;$('importState').textContent=s.customLibrary?'已载入：'+s.reference.map(x=>x.name).join('、'):'当前使用虚构示例，可直接点击下方预设问题体验。';if(s.backend==='demo')notice('演示模式：不调用 AI。登录后即可生成真实回答。');else if(!configured)notice(s.error);else notice(''); // Warm-up is explicit to avoid consuming quota on page load.
  if(s.asr.state==='starting'){const timer=setInterval(async()=>{try{const d=await(await fetch('/api/status')).json();showASR(d.asr);if(d.asr.state!=='starting')clearInterval(timer);}catch{}},2000);}
  }catch(e){notice('连接失败：'+e.message);}render();}
+function showAccount(auth={}){
+ $('accountState').textContent=auth.signedIn?(auth.error?'账号已登录，AI 连接未就绪：'+auth.error:'账号已连接，已自动选择可用模型。'):auth.pending?'请在浏览器打开的官方页面完成登录，完成后这里会自动连接。':auth.error||'无需配置。可以先用示例体验，再登录自己的账号。';
+ $('loginBtn').hidden=auth.signedIn&&!auth.error;$('loginBtn').textContent=auth.signedIn?'重新连接':'登录 ChatGPT';$('loginBtn').disabled=!!auth.pending;
+ $('logoutBtn').hidden=!auth.signedIn;$('cancelLogin').hidden=!auth.pending;
+ if(!auth.pending)$('loginLink').hidden=true;
+}
+function pollLogin(){
+ clearTimeout(authTimer);
+ const deadline=Date.now()+5*60*1000;
+ const poll=async()=>{try{const r=await fetch('/api/auth/status');const a=await r.json();showAccount(a);if(a.signedIn){await init();return;}if(!a.pending)return;if(Date.now()>deadline){await post('/api/auth/cancel',{});showAccount({error:'登录等待超时，请点击登录重试。'});return;}authTimer=setTimeout(poll,1500);}catch(e){showAccount({error:'登录状态读取失败，请重新登录。'});}};
+ authTimer=setTimeout(poll,1000);
+}
+$('loginBtn').onclick=async()=>{
+ const popup=window.open('about:blank','replymate-login');if(popup)popup.opener=null;
+ $('loginBtn').disabled=true;
+ try{const r=await post('/api/auth/login',{});const a=await r.json();if(!r.ok)throw Error(a.error);if(a.connected){popup?.close();await init();return;}if(!isLoginURL(a.authUrl))throw Error('登录地址无效，请重试');if(popup)popup.location.href=a.authUrl;$('loginLink').href=a.authUrl;$('loginLink').hidden=false;showAccount({pending:true});pollLogin();}
+ catch(e){popup?.close();showAccount({error:e.message});}
+};
+$('cancelLogin').onclick=async()=>{try{const r=await post('/api/auth/cancel',{});if(!r.ok)throw Error((await r.json()).error);clearTimeout(authTimer);showAccount();}catch(e){notice(e.message);}};
+$('logoutBtn').onclick=async()=>{try{const r=await post('/api/auth/logout',{});if(!r.ok)throw Error((await r.json()).error);await init();}catch(e){notice(e.message);}};
+async function importFile(file){
+ if(!file)return;if(file.size>20000000){notice('文件最大 20 MB，请精简后重试。');return;}
+ if(store.items.length&&!window.confirm('更换资料后将清空当前页面的问答。请先复制需要保留的回答，旧资料会自动备份。继续导入？'))return;
+ $('importBtn').disabled=true;$('importState').textContent='正在读取并保存资料…';
+ try{const r=await sessionFetch('/api/library/import',{method:'POST',headers:{'X-Session-Token':token,'X-File-Name':encodeURIComponent(file.name),'Content-Type':'application/octet-stream'},body:file});const d=await r.json();if(!r.ok)throw Error(d.error);location.reload();}
+ catch(e){$('importState').textContent='导入未完成：'+e.message;}
+ finally{$('importBtn').disabled=false;$('libraryFile').value='';}
+}
+$('importBtn').onclick=()=>$('libraryFile').click();$('libraryFile').onchange=()=>importFile($('libraryFile').files[0]);
+$('importZone').ondragover=e=>{e.preventDefault();$('importZone').classList.add('dragover');};$('importZone').ondragleave=()=>$('importZone').classList.remove('dragover');$('importZone').ondrop=e=>{e.preventDefault();$('importZone').classList.remove('dragover');if(e.dataTransfer.files.length!==1){notice('请每次导入一份资料。');return;}importFile(e.dataTransfer.files[0]);};
+$('quitApp').onclick=async()=>{const r=await post('/api/quit',{});if(r.ok){document.body.textContent='答伴已退出，可以关闭此页面。';}};
 $('listen').onclick=()=>listening?stopListening():startListening();$('finish').onclick=()=>seal(true);$('answer').onclick=()=>{if($('question').value.trim())seal(true);else notice('请先输入问题，或等转写文字出现。');};$('clear').onclick=()=>{$('question').value='';capture.discard();pendingSegment=null;recognizer?.commit();};
 $('prev').onclick=()=>{store.move(-1);versionId=null;render();};$('next').onclick=()=>{store.move(1);versionId=null;render();};$('live').onclick=()=>{store.live();versionId=null;render();};$('retry').onclick=()=>retry();$('verify').onclick=()=>retry(true);$('cancel').onclick=()=>{const q=selected(),a=q?.attempts.find(a=>a.id===versionId)||q?.attempts.at(-1);if(!a)return;lanes.cancel(attemptKey(q,a));if(store.running?.qid===q.id&&store.running.aid===a.id)activeController?.abort();if(a.state==='queued'){store.jobs=store.jobs.filter(j=>j.aid!==a.id);a.state='stopped';}render();};$('editBtn').onclick=()=>{$('editPanel').hidden=!$('editPanel').hidden;$('editText').value=selected()?.attempts.at(-1).question||'';};$('saveEdit').onclick=()=>{if($('editText').value.trim()){retry(false,$('editText').value.trim());$('editPanel').hidden=true;}};$('retranscribe').onclick=async()=>{const q=selected();if(!q?.meta.audioURL)return;try{notice('正在重新转写这一题的原音…');const blob=q.meta.audioBlob;if(!blob)throw Error('请重新录制这一题，旧页面没有保留可复核的音频对象');const r=await sessionFetch('/api/transcribe',{method:'POST',headers:{'X-Session-Token':token,'X-ASR-Quality':'accurate','Content-Type':'audio/wav'},body:blob});const d=await r.json();if(!r.ok)throw Error(d.error);q.meta.rechecked=d.text;store.select(q.id);$('editPanel').hidden=false;$('editText').value=d.text;notice('再次转写已放入修改框，请核对后点击重答。');render();}catch(e){notice(e.message);}};
 $('replay').onplay=()=>{if(listening)stopListening();};

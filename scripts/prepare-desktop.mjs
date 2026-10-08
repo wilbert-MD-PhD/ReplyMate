@@ -1,0 +1,15 @@
+import {cp,mkdir,rm,readFile,writeFile,stat} from 'node:fs/promises';
+import path from 'node:path';
+import {createRequire} from 'node:module';
+import {fileURLToPath} from 'node:url';
+const root=path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+const require=createRequire(import.meta.url);
+const key=process.platform+'-'+process.arch;
+const triples={'darwin-arm64':'aarch64-apple-darwin','darwin-x64':'x86_64-apple-darwin','win32-x64':'x86_64-pc-windows-msvc','win32-arm64':'aarch64-pc-windows-msvc','linux-x64':'x86_64-unknown-linux-musl','linux-arm64':'aarch64-unknown-linux-musl'};
+if(!triples[key])throw Error('Unsupported desktop target '+key);
+const pkg=path.dirname(require.resolve('@openai/codex-'+key+'/package.json'));
+const source=path.join(pkg,'vendor',triples[key]),dest=path.join(root,'build','codex');
+await stat(path.join(source,'bin',process.platform==='win32'?'codex.exe':'codex'));
+await mkdir(path.dirname(dest),{recursive:true});await rm(dest,{recursive:true,force:true});await cp(source,dest,{recursive:true});
+await writeFile(path.join(root,'build','codex-version.txt'),JSON.parse(await readFile(path.join(pkg,'package.json'),'utf8')).version+'\n');
+console.log('Prepared bundled Codex runtime: '+key);

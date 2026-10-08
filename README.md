@@ -1,121 +1,87 @@
 # ReplyMate · 答伴
 
-**会议问答神器 · 面试答题神器**
+**会议问答助手 · 面试答题神器**
 
-ReplyMate（答伴）是一款开源的英文问答辅助工具，适用于会议汇报、面试准备与模拟练习。
-导入自己的资料后，可生成两版便于口述的英文回答，并查看问题的中文翻译。
+用自己的资料，准备便于口述的英文回答。ReplyMate 适用于会议汇报、面试准备与模拟练习，提供两版英文候选回答、问题的中文翻译、预设快答和历史回看。
 
-工具在本机浏览器中使用，采用中文界面，支持文字输入、语音收音、预设快答、历史回看和修改重答。
-两个英文回答独立排队并逐步显示，方便比较和选择。
+[下载安装](https://github.com/wilbert-MD-PhD/ReplyMate/releases/latest) · [English](README.en.md) · [资料格式](docs/library-format.md)
 
-[English](README.en.md) · [下载最新版](https://github.com/wilbert-MD-PhD/ReplyMate/releases/latest) · [资料格式](docs/library-format.md) · [验证范围](docs/validation.md)
+## 下载，打开，就能体验
 
-## 下载后快速体验
+| 你的电脑 | 下载文件 |
+| --- | --- |
+| Mac，Apple 芯片（M1、M2 等） | [macOS Apple 芯片版](https://github.com/wilbert-MD-PhD/ReplyMate/releases/download/v2.4.0/ReplyMate-2.4.0-macOS-arm64.dmg) |
+| Mac，Intel 芯片 | [macOS Intel 版](https://github.com/wilbert-MD-PhD/ReplyMate/releases/download/v2.4.0/ReplyMate-2.4.0-macOS-x64.dmg) |
+| Windows，Intel / AMD 64 位 | [Windows 安装版](https://github.com/wilbert-MD-PhD/ReplyMate/releases/download/v2.4.0/ReplyMate-2.4.0-Windows-x64-Setup.exe) |
 
-需要 **Node.js 22 或更新版本**，从 [Node.js 官网](https://nodejs.org/) 安装。
-应用没有第三方 npm 运行依赖，不需要构建前端，也不需要 Python。
+**Mac**：打开 DMG，将 ReplyMate 拖入“应用程序”，双击 ReplyMate。
 
-1. 在 [Releases](https://github.com/wilbert-MD-PhD/ReplyMate/releases/latest) 下载最新版 ZIP 压缩包并解压。
-2. 在解压后的目录运行 `npm start`。也可双击 macOS 的 `start.command` 或 Windows 的 `start.bat`，Linux 执行 `sh start.sh`。
-3. 打开 [http://127.0.0.1:8780](http://127.0.0.1:8780)，点击页面下方的 `Project purpose` 示例问题。
+**Windows**：双击安装文件，安装后自动打开，以后点击桌面上的 ReplyMate 图标。
 
-默认是**离线演示**：不需要登录，不调用 AI。预设答案和资料摘录均来自虚构的“社区用电看板”示例。
-这用于体验交互，真实回答和自动翻译需要下面的 Codex 配置。
+应用会自动在默认浏览器打开答伴。**运行环境和 AI 连接组件已包含在安装包中，无需安装 Node.js、运行命令或编辑配置文件。**
 
-## 启用真实 AI
+第一次打开可直接点击示例问题体验，演示模式不登录、不调用 AI。需要生成自己的回答时：
 
-安装 [Codex CLI](https://developers.openai.com/codex/cli/)，运行 `codex login` 完成自己的登录。
-本工具通过官方 [Codex App Server](https://learn.chatgpt.com/docs/app-server) 的本机进程连接。
-无需把账号、密码或令牌填入本工具。
+1. 点击 **登录 ChatGPT**，在官方登录页面完成授权。返回答伴后自动连接，下次启动保留登录状态。
+2. 点击 **选择资料**，或把文件拖到资料区域。导入后立即生效。
+3. 输入英文问题，点击 **立即回答**，或使用浏览器支持的语音收音。
 
-```sh
-npm install -g @openai/codex
-codex login
-```
+当前安装包尚未使用开发者证书签名及 Apple 公证，系统首次打开可能显示安全确认。单位管理的电脑可能限制运行未签名应用。
 
-将 `.env.example` 复制为 `.env`，用文本编辑器把 `QA_BACKEND=demo` 改为：
+## 可以放入哪些资料
 
-```dotenv
-QA_BACKEND=codex
-PORT=8780
-CODEX_BIN=codex
-```
+支持 **Word（DOCX）、PowerPoint（PPTX）、PDF、Markdown、TXT**，以及带预设问答的 [资料 JSON](docs/library-format.md)。每次导入一份文件，最大 20 MB。提取后的文字最大 1 MB，资料 JSON 最大 5 MB。
 
-停止旧服务并重新运行 `npm start`。页面应显示 `Codex 已连接`。
-如命令不可见，将 `CODEX_BIN` 设为自己电脑上的可执行文件路径。
-Windows 的 Codex 后端建议在 WSL 中运行整个应用，演示模式可以直接使用 `start.bat`。
+文档在本机读取，提取文字内容。扫描图片、图表和公式需要自行核对或补充为文字。没有可读取文字时会提示导入失败，并保留原资料。
 
-- 模型列表从当前账户读取。默认使用列表推荐模型，第二回答默认使用同一模型的独立会话。
-- 可在 `.env` 设置 `QA_FAST_MODEL`、`QA_SECONDARY_MODEL`，切换到列表中的模型。修改后重启。
-- `QA_FAST_EFFORT`、`QA_SECONDARY_EFFORT` 留空时选模型支持的较低推理强度。指定值不受支持时会报错。
-- 列表出现某模型不保证当前账户能完成推理，权限和额度以实际请求结果为准。
-- 双回答、中文翻译、预热及竞速都会消耗自己的模型额度。预热由按钮手动触发。
+更换资料时会自动备份旧资料并清空本页问答，请先复制需要保留的回答。普通文档导入后会清空示例预设，避免把示例答案用于自己的问题。要设置预设快答，可按资料格式编辑 JSON，只把核对完成的答案标记为 `reviewed: true`。
 
-## 换成自己的资料
+摘要取文本前 12,000 字符，每次提问再检索最多三个相关片段。建议把概要、关键数据和常见问题放在资料前部。当前检索以英文关键词为主。
 
-在终端进入本工具目录，运行：
+## 使用方式
 
-```sh
-npm run import -- "/path/to/your-notes.md"
-```
+- **双版回答**：快速回答和第二回答分别排队、逐步显示，方便比较。第二回答也是候选答案，需要自行核对事实。
+- **手动提问**：输入英文问题，点击按钮，或按 `Ctrl+Enter` / `Command+Enter`。
+- **连续收音**：浏览器支持语音识别并获得麦克风权限后，可在停顿后自动提交问题。按 `Esc` 暂停。建议使用支持语音识别的 Chrome 或 Edge。
+- **历史与重答**：回看上一题、下一题，修改问题后重新回答，或返回现场自动跟随。
+- **模型选择**：登录后自动选择账号中的可用模型，默认无需修改。模型预热为可选功能。
+- **退出**：点击页面底部“退出答伴”，或从菜单栏 / 系统托盘退出。关闭浏览器标签页后，答伴仍在后台运行。
 
-支持 `.md`、`.txt` 和本工具格式的 `.json`。文本资料上限 1 MB，JSON 上限 5 MB。
-PPTX、DOCX、PDF 请先导出或整理为文本，公式和图片内容需要手工补充。
+语音识别是否可用取决于浏览器和设备，手动输入随时可用。刷新或关闭页面会清空当前问答和录音，导入资料和登录状态保留。
 
-导入结果保存在 `user-data/reference.json`。已有资料先在同目录备份，再替换。
-重启服务并刷新页面后生效。导入文本会清空示例预设，避免旧答案混入新资料。
-需要预设快答时，按 [资料格式](docs/library-format.md) 编辑 JSON 并重新导入。
-只把核对完成的答案设为 `reviewed: true`。
+## 账号、资料与隐私
 
-摘要使用资料前 12,000 字符，并按当前问题检索最多三个片段。
-长文建议先整理摘要、常见问答和关键数据。检索依赖英文关键词，当前版本面向英文会议。
+AI 回答需要支持 Codex 的账号权限及可用额度。双回答、中文翻译、预热和竞速都会消耗你自己的额度，离线演示不消耗。模型列表不代表每个模型都可成功调用，权限和额度以实际请求为准。
 
-## 现场使用
+桌面版将资料、备份和账号状态保存在自己的应用数据目录，与程序安装位置分开。升级安装包不会替换这些数据。账号授权由内置的官方 Codex 组件处理，答伴不要求填写密码或复制令牌，登录流程使用 [Codex App Server](https://learn.chatgpt.com/docs/app-server)。
 
-- **立即回答**：输入英文问题，点击按钮或按 `Ctrl+Enter` / `Command+Enter`。
-- **双回答**：快速回答与第二回答各自排队，后续问题不会覆盖前一题。第二回答也是候选答案，不代表独立事实核验。
-- **预设快答**：仅精确匹配已确认的问法，保留数字、否定和复合问题的差别。
-- **历史与重答**：上一题、下一题、回到现场、修改问题、两版重新回答。历史答案保留在本页。
-- **收音**：浏览器支持并授予麦克风权限后可自动断句入队。按 `Esc` 暂停。没有说话人识别，自己回答时可暂停。
-- **刷新页面**会清除本页的问答与录音。请提前复制需要保留的答案。
+- 界面服务只监听本机 `127.0.0.1`，端口自动分配。
+- 本工具不保存问答日志。录音只保留在当前页面内存中。
+- 浏览器语音识别可能把音频发送给浏览器供应商。演示答题可离线，浏览器收音未必离线。
+- 启用 AI 后，问题、近期问题、转写候选、资料摘要和相关片段会发送到模型服务，保留规则取决于该服务。
+- 退出账号只退出答伴的登录，不删除你的资料。
 
-## 可选本地语音识别
+## 源码运行与开发
 
-手动输入和浏览器语音识别不需要本地模型。
-如果希望本地转写，请单独安装 [whisper.cpp](https://github.com/ggml-org/whisper.cpp) 的 `whisper-server`，
-并按该项目说明下载兼容的模型。模型文件及二进制不在本下载包中。
-
-在 `.env` 配置自己的路径，例如：
-
-```dotenv
-WHISPER_BIN=whisper-server
-WHISPER_MODEL=models/your-whisper-model.bin
-```
-
-重启后，页面显示 `本地 Whisper 已就绪` 才启用本地转写选项。
-Whisper 的命令行参数可能随版本变化，请使用支持 `--request-path`、`--public` 和 `/inference` 的服务版本。
-真实口音、设备、浏览器和本地模型的识别效果需在自己的设备上验证。
-
-## 资料存储与隐私
-
-- 导入的资料保存在本机 `user-data/` 目录，可自行备份或删除。
-- 服务只监听 `127.0.0.1`，仅提供明确列出的前端文件。修改请求需要同源会话令牌。
-- 本工具不保存问答日志或上传录音。原音留在浏览器内存，本地转写时发往本机 Whisper 服务。
-- 浏览器语音识别可能发送音频到浏览器供应商。**“离线演示”指答题后端，使用浏览器收音不保证离线。**
-- Codex 模式会把问题、近期问题、转写候选、摘要及检索片段发送给配置的模型服务。保留规则取决于 Codex 和模型服务。
-- `.env`、`user-data/`、`models/`、日志和录音不在版本控制和发布清单中。勿把个人资料放进 `examples/` 或提交到公开仓库。
-
-## 开发与打包
+普通用户请下载上方桌面安装包。开发者需要 Node.js 22.13 或更新版本：
 
 ```sh
 npm ci --ignore-scripts
+npm start
+```
+
+源码版默认打开离线演示服务，浏览器访问 [http://127.0.0.1:8780](http://127.0.0.1:8780)。要使用源码版的 AI 功能，先安装 Codex CLI，再点击页面中的登录按钮。开发配置可参考 `.env.example`。
+
+```sh
 npm test
 npm run check
 npm run package
+node node_modules/electron/install.js
+npm run desktop:build
 ```
 
-打包结果在 `dist/`：ZIP、逐文件 SHA-256 清单和 `SHA256SUMS.txt`。
-打包只读取 `scripts/release-files.mjs` 的明确清单，不遍历或复制工作目录中的个人资料。
-GitHub Actions 检查 Node.js 22/24 在 macOS、Linux、Windows 上的测试与打包。
+桌面打包会内置 Electron 运行环境和与系统架构匹配的 Codex 组件。GitHub Actions 在 macOS Apple 芯片、macOS Intel 和 Windows 上分别打包并进行独立首次启动检查。源码 ZIP 与桌面安装包是不同交付物。
 
-MIT 许可。独立安装的运行时、Codex、Whisper 和模型遵循各自的许可及服务条款。
+可选的本地 Whisper 语音识别供源码使用者配置，说明见 [开发说明](docs/development.md)。[验证范围](docs/validation.md) 记录实际检查内容。
+
+MIT 许可。附带及单独安装的组件遵循各自许可，见 [第三方组件](THIRD_PARTY_NOTICES.md)。

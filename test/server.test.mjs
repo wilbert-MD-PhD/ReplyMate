@@ -3,11 +3,15 @@ import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
 import {once} from 'node:events';
 import net from 'node:net';
+import {mkdtemp,readFile,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import path from 'node:path';
 import {setTimeout as delay} from 'node:timers/promises';
 const probe=net.createServer();await new Promise(r=>probe.listen(0,'127.0.0.1',r));const port=probe.address().port;await new Promise(r=>probe.close(r));
 const origin='http://127.0.0.1:'+port;
 test('clean demo server: paired streams, session auth, private-file isolation and validation',async t=>{
- const child=spawn(process.execPath,['server.mjs'],{cwd:new URL('..',import.meta.url),env:{...process.env,PORT:String(port),QA_BACKEND:'demo',QA_FAST_MODEL:'',QA_SECONDARY_MODEL:'',WHISPER_BIN:'',WHISPER_MODEL:''},stdio:['ignore','pipe','pipe']});
+ const dataDir=await mkdtemp(path.join(tmpdir(),'replymate-server-test-'));
+ const child=spawn(process.execPath,['server.mjs'],{cwd:new URL('..',import.meta.url),env:{...process.env,PORT:String(port),QA_BACKEND:'demo',REPLYMATE_DATA_DIR:dataDir,QA_FAST_MODEL:'',QA_SECONDARY_MODEL:'',WHISPER_BIN:'',WHISPER_MODEL:''},stdio:['ignore','pipe','pipe']});
  let output='';child.stderr.on('data',d=>{output+=d;});child.stdout.on('data',()=>{});
  try{
   let status;
@@ -27,7 +31,20 @@ test('clean demo server: paired streams, session auth, private-file isolation an
    assert.match(texts[0],/event: done/);assert.match(texts[1],/event: done/);assert.match(texts[2],/这个项目有哪些局限/);assert.doesNotMatch(texts.join(''),/event: error/);
   });
   await t.test('input limits and unknown models fail before streaming',async()=>{for(const data of [{question:''},{question:'x'.repeat(8001)},{question:'Hello?',model:'unknown'}])assert.equal((await post('/api/answer',data)).status,400);});
+  await t.test('imports in the UI are authenticated, saved, applied live and retained after errors',async()=>{
+   const send=(name,body,headers={})=>fetch(origin+'/api/library/import',{method:'POST',headers:{Origin:origin,'X-Session-Token':status.token,'X-File-Name':encodeURIComponent(name),...headers},body});
+   assert.equal((await send('my.md','New reference',{'X-Session-Token':'wrong'})).status,403);
+   assert.equal((await send('my.md','# My talk\n\nOur study includes 12 teams.')).status,200);
+   const updated=await(await fetch(origin+'/api/status')).json();assert.equal(updated.customLibrary,true);assert.equal(updated.reference[0].name,'my.md');
+   assert.deepEqual(await(await fetch(origin+'/api/faq')).json(),[]);
+   assert.match(await readFile(path.join(dataDir,'reference.json'),'utf8'),/12 teams/);
+   assert.equal((await send('bad.json','{}')).status,400);
+   assert.match(await readFile(path.join(dataDir,'reference.json'),'utf8'),/12 teams/);
+   const answer=await(await post('/api/answer',{question:'Tell me about the study with 12 teams',client:'new'})).text();assert.match([...answer.matchAll(/^data: (.+)$/gm)].map(m=>JSON.parse(m[1]).text||'').join(''),/12 teams/);
+   assert.equal((await post('/api/auth/login',{}, {'X-Session-Token':'stale'})).status,403);
+   assert.equal((await(await fetch(origin+'/api/auth/status')).json()).signedIn,false);
+  });
  }finally{
-  const exited=once(child,'exit');child.kill();await Promise.race([exited,delay(5000).then(()=>{if(child.exitCode===null)child.kill('SIGKILL');})]);
+  const exited=once(child,'exit');child.kill();await Promise.race([exited,delay(5000).then(()=>{if(child.exitCode===null)child.kill('SIGKILL');})]);await rm(dataDir,{recursive:true,force:true});
  }
 });

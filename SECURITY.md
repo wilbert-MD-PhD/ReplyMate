@@ -7,10 +7,10 @@ It is not intended as a shared or internet-facing service.
 The Codex adapter requests ephemeral sessions, a temporary working directory, read-only sandboxing,
 disabled environment access, no app/web/shell tools and no project instructions. It rejects server tool
 requests and stops unexpected tool items. This is defense in depth, not a guarantee about every future
-Codex version or external provider. Keep your CLI updated and review your own provider settings.
+Codex version or external provider. Use current desktop releases and review your own provider settings.
 
 No question or recording logs are written by this application. Imported libraries and their backups live
-in `user-data/`. Codex and browser speech services have separate processing and retention rules.
+in the application-data directory for desktop builds, or `user-data/` for source runs. Desktop Codex account state is isolated in its own application-data directory. Login URLs are restricted to official HTTPS destinations. Codex and browser speech services have separate processing and retention rules.
 Private imports, credentials and models are excluded by `.gitignore` and the release allowlist.
 
 Report ordinary bugs through GitHub Issues using fictional reproduction data.

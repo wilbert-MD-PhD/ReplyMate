@@ -13,7 +13,8 @@ export async function checkRelease(){
   if(content.length>5000000)throw Error('Unexpected large file: '+name);
  }
  const html=await readFile(path.join(root,'public/index.html'),'utf8');
- if(/<meta[^>]+name=["'](?:author|generator)["']/i.test(html))throw Error('Public HTML contains identifying author/generator metadata');
+ if(/<meta[^>]+name=["']generator["']/i.test(html))throw Error('Public HTML contains generator metadata');
+ if(!html.includes('<meta name="author" content="wilbert">'))throw Error('Missing document author metadata');
  console.log(`Release audit passed: ${releaseFiles.length} allowlisted files, ${total} bytes.`);
  return {count:releaseFiles.length,bytes:total};
 }

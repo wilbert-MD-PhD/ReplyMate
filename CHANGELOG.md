@@ -1,9 +1,18 @@
 # Changelog
 
+## 2.4.0 — 2026-10-08
+
+- Adds desktop installers with bundled runtime and Codex, automatic browser launch and an automatically assigned local port.
+- Adds in-app account login, cancellation and logout, with a separate persistent desktop account directory.
+- Adds local DOCX/PPTX/PDF/text/JSON imports in the page, automatic backups and immediate application.
+- Changes the tagline to **会议问答助手 · 面试答题神器**.
+- Adds packaging and clean-account startup checks for macOS arm64, macOS x64 and Windows x64.
+- Desktop packages are currently unsigned and not notarized.
+
 ## 2.3.1 — 2026-10-08
 
 - Renames the project to **ReplyMate（答伴）**.
-- Uses **会议问答神器 · 面试答题神器** as the Chinese project tagline.
+- Uses **会议问答助手 · 面试答题神器** as the Chinese project tagline.
 - Updates the application page, repository links, package metadata and release filenames.
 - Keeps paired answers, prepared responses, continuous speech capture, answer history and retries.
 
