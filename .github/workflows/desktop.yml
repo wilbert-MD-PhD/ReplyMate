@@ -2,6 +2,7 @@ name: Desktop packages
 on:
   workflow_dispatch:
   push:
+    branches: ['desktop-*']
     tags: ['v*']
 permissions:
   contents: read

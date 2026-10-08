@@ -3,7 +3,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 const root=path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const rel=process.platform==='darwin'?`dist/desktop/mac${process.arch==='arm64'?'-arm64':''}/ReplyMate.app/Contents/MacOS/ReplyMate`:process.platform==='win32'?'dist/desktop/win-unpacked/ReplyMate.exe':'dist/desktop/linux-unpacked/replymate';
-const child=spawn(path.join(root,rel),['--smoke-test'],{stdio:['ignore','pipe','pipe'],windowsHide:true,env:{...process.env,PATH:process.platform==='win32'?(process.env.SystemRoot||'C:\\Windows')+'\\System32':'/usr/bin:/bin',OPENAI_API_KEY:'',CODEX_API_KEY:''}});
+const child=spawn(path.join(root,rel),['--smoke-test'],{stdio:['ignore','pipe','pipe'],windowsHide:true,env:{...process.env,PATH:process.platform==='win32'?path.join(process.env.SystemRoot||'C:\\Windows','System32'):'/usr/bin:/bin',OPENAI_API_KEY:'',CODEX_API_KEY:''}});
 let output='';child.stdout.on('data',d=>{output+=d;process.stdout.write(d);});child.stderr.on('data',d=>process.stderr.write(d));
 const timeout=setTimeout(()=>{child.kill();process.exitCode=1;},45000);
 child.on('error',e=>{clearTimeout(timeout);console.error(e.message);process.exitCode=1;});
