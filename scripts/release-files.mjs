@@ -42,5 +42,10 @@ export const releaseFiles=[
  'test/recovery.test.mjs',
  'test/fixtures/codex-process.mjs',
  'docs/components.md',
+ 'docs/images/replymate-v2.5.0-demo.jpg',
+ 'docs/latency-benchmark.md',
+ 'docs/benchmarks/2026-10-08/questions.json',
+ 'docs/benchmarks/2026-10-08/results.json',
+ 'docs/benchmarks/2026-10-08/SHA256SUMS.txt',
  'scripts/verify-local-components.mjs'
 ].sort();

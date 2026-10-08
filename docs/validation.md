@@ -1,5 +1,15 @@
 # Validation scope
 
+## 2.5.0 published release — 2026-10-08
+
+The [v2.5.0 release record](https://github.com/wilbert-MD-PhD/ReplyMate/releases/tag/v2.5.0) covers source commit `f5ce425c31d7ff28ae6871fad2f3821fef71bd5e`. It records 89 passing automated tests across Linux / macOS / Windows with Node 22 / 24, and three-platform builds, core-content audits and clean-account packaged-app startup checks. Evidence: [test matrix](https://github.com/wilbert-MD-PhD/ReplyMate/actions/runs/37762058501) and [desktop builds and startup checks](https://github.com/wilbert-MD-PhD/ReplyMate/actions/runs/37762058511).
+
+The release record also reports local Apple-silicon component imports and self-tests, seven speech models tested with public English sample audio and silence, cross-site rejection checks, and Turbo CPU fallback. Browser checks covered the desktop and narrow layouts, component center, Word import, language selection and warm-up status. These are release records, not a claim that every check was repeated for subsequent documentation edits.
+
+The current architecture targets the first quick-answer character within three seconds of submission. Its real-account success rate remains unverified. Real microphones, per-language recognition quality, 30-minute continuous capture, all seven models on Windows / Intel, and real upgrades and rollbacks from the previous version remain pending. Packages are unsigned and not Apple-notarized.
+
+The README screenshot uses the unmodified v2.5.0 source in an isolated offline demo with bundled fictional material. It illustrates the interface only; no AI account, live microphone or real-model latency is involved.
+
 ## Response latency pilot — 2026-10-08
 
 This historical pilot used the same model for both answer lanes; it does not measure the restored fast-race/independent-Astra defaults. In a local 20-question source-service test, 14/20 questions (70%) received the first text from either English answer within 3 seconds of request dispatch; 18/20 (90%) did so within 5 seconds. Median time to the first of the two answers was 2.59 seconds. The fast-answer lane alone reached 3 seconds in 9/20 cases (45%). The test used gpt-6.1-sol / low, short fictional reference material, concurrent answer/answer/translation requests, no explicit warm-up and no prepared-answer shortcut. It excludes speech recognition, utterance detection, user queue time and browser rendering. This is a small source-service pilot, not an installer benchmark or a universal latency guarantee. See [method, per-question timings and raw data](latency-benchmark.md).

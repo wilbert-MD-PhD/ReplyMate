@@ -1,58 +1,103 @@
-# ReplyMate
+# ReplyMate · 答伴
 
-Version 2.5 introduces a lightweight core and optional AI, Office, PDF, and local Whisper components. Components download only after an explicit install action. Once AI is installed and signed in, startup automatically warms the real answer sessions and shows progress.
+**Prepare for meeting Q&A and English interviews with your own reference material.**
 
-The prominent performance target is the first quick-answer character within 3 seconds of submission. Actual latency remains visible per answer; prepared answers do not count as model latency. See [component development](docs/components.md) and [release notes](docs/release-v2.5.2.md).
+See a quick answer first while an independent deep answer develops. ReplyMate supports speech input, Chinese question translations and session history. The interface is in Chinese; answers currently default to English.
 
+[Download v2.5.0](#download) · [Quick start](#quick-start) · [中文说明](README.md) · [Release notes](https://github.com/wilbert-MD-PhD/ReplyMate/releases/tag/v2.5.0)
 
-**会议问答助手 · 面试答题神器** — your companion for meeting Q&A and interview practice.
+## Download
 
-ReplyMate pairs speed with depth for meeting Q&A and interview practice. **Fast answers race multiple models and stream the first model to return answer text. Deep answers run independently on the strongest model, GPT-6 Astra by default.** Both lanes start together; slower deep answers never block the next fast answer. Responses are currently in English, with Chinese question translations, prepared responses and answer history. The interface is in Chinese.
+| Your computer | v2.5.0 installer | Size |
+| --- | --- | ---: |
+| Mac with Apple silicon (M series) | [macOS Apple silicon](https://github.com/wilbert-MD-PhD/ReplyMate/releases/download/v2.5.0/ReplyMate-2.5.0-macOS-arm64.dmg) | 127.9 MB |
+| Mac with an Intel processor | [macOS Intel](https://github.com/wilbert-MD-PhD/ReplyMate/releases/download/v2.5.0/ReplyMate-2.5.0-macOS-x64.dmg) | 131.7 MB |
+| Windows on Intel / AMD 64-bit | [Windows installer](https://github.com/wilbert-MD-PhD/ReplyMate/releases/download/v2.5.0/ReplyMate-2.5.0-Windows-x64-Setup.exe) | 111.5 MB |
 
-Version 2.5.2 fixes AI reconnection controls, overlapping settings updates, and per-page session isolation. The earlier “70% within 3 seconds” pilot used two requests to the same model and does not measure this restored architecture. [Historical method and results](docs/latency-benchmark.md).
+These sizes cover the core app; 1 MB = 1,000,000 bytes. AI, document parsing and local speech components download separately when you install them. The app shows each download size. [All releases and older installers](https://github.com/wilbert-MD-PhD/ReplyMate/releases).
 
-By default, two available models race for the fast lane; losing requests are cancelled after the first non-whitespace answer text. Astra runs separately with its catalog-default reasoning effort. The page shows both choices and allows manual overrides. If only one fast model is available, the page states that a race cannot run. If Astra is unavailable, select a deep model explicitly; the app does not silently substitute the fast model.
+![ReplyMate v2.5.0: question input on the left, with a Chinese question translation and separate quick and deep answers on the right](docs/images/replymate-v2.5.0-demo.jpg)
 
-[Download the desktop app](https://github.com/wilbert-MD-PhD/ReplyMate/releases/latest) · [中文说明](README.md)
+*Actual interface using the bundled fictional material and offline demo. The answers and timings shown are not real AI generation or performance results.*
 
-## Download and open
+## Quick start
 
-Choose the macOS DMG for Apple Silicon or Intel, or the Windows x64 installer. On Mac, drag ReplyMate into Applications and open it. On Windows, run the installer; the app opens automatically and adds a desktop shortcut.
+1. **Install and open.** On Mac, open the DMG and drag ReplyMate into Applications. On Windows, run the installer. The app opens in your default browser; no separate Node.js installation or terminal commands are needed.
+2. **Try the sample.** Click a prepared question near the bottom of the page to explore the interface offline, without signing in.
+3. **Enable AI.** Click **启用 AI 回答** (Enable AI answers), then confirm the component download and installation. Once installed, click **登录 ChatGPT** and authorize on the official sign-in page. The app connects and automatically warms up the answer sessions, showing progress at the top. Warm-up uses your account quota.
+4. **Import material.** Click **选择资料**, or drop a file into the import area. TXT, Markdown and reference-library JSON work immediately. Word / PowerPoint and PDF require their corresponding components.
+5. **Ask a question.** Type a question and click **立即回答**, or press `Ctrl+Enter` / `Command+Enter`. For speech input, choose browser transcription or install the local speech components.
 
-ReplyMate opens in your default browser. The runtime is bundled and the AI component installs on demand from the component center: **no Node.js installation, terminal commands or configuration files are needed**.
+**First launch:** Installers are currently unsigned and are not Apple-notarized. Your operating system may show an unidentified-developer prompt; managed computers may block the app.
 
-Try the fictional sample immediately without signing in. To use AI with your material:
+**Upgrading from v2.4:** Account, reference and backup directories are retained. AI and document parsing components need to be installed once after upgrading. The app does not download all components automatically on first launch.
 
-1. Click **启用 AI 回答** to install the AI component, then **登录 ChatGPT** and authorize on the official sign-in page. The app connects automatically and remembers your session.
-2. Click **选择资料**, or drop a file into the import area.
-3. Type a question and click **立即回答**. Voice capture is available in supported browsers.
+## Features and components
 
-These packages do not yet have developer certificate signing or Apple notarization. Your operating system may show a first-run security prompt; managed computers may block unsigned apps.
+| Feature | What to install | Network requirement |
+| --- | --- | --- |
+| Demo, typed input, TXT / Markdown / JSON imports | Core app only | Works offline |
+| Quick answers, independent deep answers, Chinese question translations | AI answer component | Internet, Codex access and available account quota |
+| Word / PowerPoint text extraction | Word and PowerPoint component | Local parsing after installation |
+| PDF text extraction | PDF text-reading component | Local parsing after installation; no OCR |
+| Browser speech transcription | A supported browser and microphone permission | May use the browser vendor's cloud service |
+| Local speech transcription | Whisper engine and one speech model | Works offline after installation |
 
-## Import your material
+The component center supports pause, resume, repair, uninstall and manual import. The recommended Turbo multilingual model is about 574 MB, with the engine installed separately. Smaller models are also available. Switching recognition languages within one multilingual model does not require another download.
 
-Accepts DOCX, PPTX, PDF, Markdown, TXT and [reference-library JSON](docs/library-format.md). Import one file at a time, up to 20 MB. Extracted text is limited to 1 MB and library JSON to 5 MB.
+- **Quick and deep answers start together.** The quick lane races two available models by default. The deep model runs independently, so a slower deep answer does not block the next question.
+- **Three-second first-text target.** The target is the first quick-answer character within three seconds of submission. Actual latency is shown per question. The current release's real-account success rate is still unverified; demo and prepared answers do not count as AI results. [Measurement scope and historical results](docs/latency-benchmark.md).
+- **Multilingual input.** Select a speech recognition language separately from the answer language, which currently defaults to English. Multilingual speech models use your selected language; English-only models support English only. Recognition quality still needs validation for each language.
+- **History and retries.** Revisit questions from the current session, edit and retry a question, retry only the deep answer, or use prepared answers you have checked.
 
-Install the optional Office or PDF component before importing those formats. Documents are parsed locally and applied immediately. Text extraction does not recognize scanned images or interpret charts. A failed import preserves the current library. Replacing material backs up the old library and reloads the page, clearing the current Q&A. Copy any answers you need first.
+## Accounts and privacy
 
-Document imports clear sample prepared responses. For your own prepared responses, import a library JSON and mark only checked answers as `reviewed: true`. The summary uses the first 12,000 text characters, with up to three keyword-matched excerpts per question. Retrieval supports multilingual keywords.
+AI features require Codex access and available quota on your account. Model races, deep answers, Chinese translations and automatic warm-up all use that quota. Offline demos do not. Model access depends on actual inference permissions.
 
-## Accounts, speech and privacy
+The installed official Codex component handles authentication. Sign in on the official authorization page; you do not enter passwords or paste tokens into ReplyMate. References, backups and account state are stored in the app's own local data directory.
 
-AI requires Codex access and available quota on your account. Answers, translations, optional warm-ups and model races use your quota. The app selects an available catalog model automatically; individual inference access still depends on your account.
+- Documents are parsed locally. In local Whisper mode, audio stays on your computer, with no automatic fallback to online recognition.
+- Browser speech recognition may send audio to the browser vendor.
+- **When AI answers are enabled, questions, recent questions, transcription alternatives, reference summaries and relevant excerpts are sent to the model service.** This also applies when transcription is local. The model service's retention rules apply.
+- The interface server listens only on the local loopback address. Current Q&A and recordings stay in page memory and disappear when the page closes or reloads.
 
-The desktop app stores references, backups and account state in its own application-data directory. It uses the optional official [Codex App Server](https://learn.chatgpt.com/docs/app-server) for authentication and inference. You do not enter passwords or paste tokens into ReplyMate.
+## Frequently asked questions
 
-The local server uses a dynamically assigned loopback port. Q&A and recordings stay in page memory and disappear when the page closes or reloads. In AI mode, questions, recent questions, transcription alternatives and relevant reference context are sent to the model service, whose retention rules apply.
+**Can it read scanned PDFs, images or charts?**
 
-Browser speech recognition depends on browser and device support and may send audio to the browser vendor. Try Chrome or Edge; typing is always available. The demo answer backend is offline, but browser speech capture may not be.
+Only readable text is extracted. OCR, chart interpretation and formula interpretation are not included. Convert or supplement these materials as text first. A failed text import leaves your current library intact.
 
-Use **退出答伴** at the bottom of the page or the tray/menu-bar menu to quit the app. Closing the browser tab leaves the app running. Signing out of ReplyMate does not delete your reference material.
+**Can I import several documents? What happens when I replace material?**
 
-## Development
+Import one file at a time, up to 20 MB. Replacing material backs up the previous library and clears the current page's Q&A. Copy any answers you need first. Document imports also clear the sample prepared answers. See [formats, limits and prepared answers](docs/library-format.md).
 
-For source use, install Node.js 22.13+, run `npm ci --ignore-scripts`, then `npm start`. Install Codex CLI to enable the sign-in button in a source checkout. Desktop users install it through the component center.
+**Can a Chinese question retrieve English reference excerpts?**
 
-Run `npm test`, `npm run check`, and `npm run package` for source verification and packaging. Run `node node_modules/electron/install.js`, then `npm run desktop:build` for a desktop build. CI builds and smoke-tests macOS arm64, macOS x64 and Windows x64 separately.
+Input supports Chinese and other non-Latin scripts, but excerpt retrieval uses same-language lexical matching, not cross-language semantic search. The reference summary is still sent to AI. Use the same language for questions and key reference excerpts where possible, and check the answer's supporting material.
 
-See [development notes](docs/development.md), [validation scope](docs/validation.md) and [third-party notices](THIRD_PARTY_NOTICES.md). MIT licensed; bundled components and services retain their own licenses and terms.
+**What if a model is unavailable after sign-in?**
+
+With only one quick model available, the app shows single-model mode. If the default deep model is unavailable, select an available model in model settings. A model appearing in the catalog does not guarantee inference access; permissions and quota depend on actual requests.
+
+**Can I use it without speech recognition?**
+
+Typing is always available. Browser recognition depends on your browser and device; try Chrome or Edge. For local recognition, install the engine and a model, apply the model and language in **组件与本地语音**, and wait for the ready status before recording. Press `Esc` to pause.
+
+**Does closing the tab quit the app or delete my material?**
+
+Closing the browser tab leaves the app running. Use **退出答伴** at the bottom of the page or the tray/menu-bar menu to quit. Closing the page clears session Q&A and recordings, while imported material and login state remain. Signing out does not delete reference material.
+
+## Development and further reading
+
+Source use requires Node.js 22.13 or newer. In the source directory, run:
+
+```sh
+npm ci --ignore-scripts
+npm start
+```
+
+Open [http://127.0.0.1:8780](http://127.0.0.1:8780) for the offline demo. See [development notes](docs/development.md) and [component development](docs/components.md) for source AI configuration, model policy, testing and packaging. The source branch may include changes not yet shipped in installers; see the [source changelog](CHANGELOG.md).
+
+[Release notes](docs/release-v2.5.0.md) · [Validation scope](docs/validation.md) · [Report an issue](https://github.com/wilbert-MD-PhD/ReplyMate/issues)
+
+[MIT licensed](LICENSE). Bundled and separately installed components retain their own licenses; see [third-party notices](THIRD_PARTY_NOTICES.md).

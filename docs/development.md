@@ -1,6 +1,6 @@
 # 开发与可选配置
 
-桌面主程序包含运行环境，Codex 在组件中心按需安装，普通使用无需配置本页内容。
+v2.5 桌面安装包包含主程序运行环境。AI 回答、文档解析和本地语音通过组件中心按需安装，普通用户无需安装系统 Node.js、npm 或 Codex。
 
 源码模式需要 Node.js 22.13+，先运行 `npm ci --ignore-scripts`。默认 `npm start` 启动离线演示，安装 Codex CLI 后可通过页面按钮登录。设置 `QA_BACKEND=auto` 可在启动时检查现有登录，未登录时保留演示。`QA_BACKEND=codex` 同样会在启动时连接 Codex，未登录时可通过页面完成登录。
 
@@ -21,15 +21,29 @@ WHISPER_MODEL=models/your-whisper-model.bin
 
 ## 桌面包
 
+测试文档解析前安装两组插件依赖，再执行自动测试与源码打包检查：
+
 ```sh
 npm ci --ignore-scripts
+npm ci --ignore-scripts --prefix plugins/docs-office
+npm ci --ignore-scripts --prefix plugins/docs-pdf
+npm test
+npm run check
+npm run package
+```
+
+桌面组件构建需要 CMake 与目标平台编译工具，详细要求见 [组件开发与验收](components.md)。在目标操作系统和架构上执行：
+
+```sh
 node node_modules/electron/install.js
+npm run whisper:build
 npm run desktop:build
+npm run desktop:audit
 node scripts/smoke-desktop.mjs
 ```
 
-在目标操作系统和架构上打包。安装包输出到 `dist/desktop/`。`scripts/prepare-desktop.mjs` 仅从固定版本的官方 Codex npm 依赖复制目标架构的运行组件。`electron-builder.yml` 使用明确文件列表，不包含个人资料、账号或开发配置。
+主程序安装包输出到 `dist/desktop/`，独立组件输出到 `dist/components/`。`scripts/build-components.mjs` 从固定依赖构建目标架构组件并生成大小与哈希目录，`scripts/prepare-desktop.mjs` 准备不含这些可选运行组件的核心目录。安装包不包含个人资料、账号或开发配置。
 
 桌面应用启动本机服务并自动打开默认浏览器。`PORT=0` 由操作系统分配端口。资料在 Electron 的应用数据目录下 `data/`，独立登录状态在 `account/`，与源码用户的 Codex 配置分开。
 
-首次启动检查使用临时空账户目录，检查内置组件、示例资料和界面加载，不读取维护者的登录凭据，不发送 AI 生成请求。正式发布前还需人工核对安装和浏览器交互。
+首次启动检查使用临时空账户目录，验证没有安装组件时的演示、TXT 导入，以及导入 Word 时的缺少组件提示，不读取维护者的登录凭据，不发送 AI 生成请求。组件安装与自检单独验证，正式发布前还需人工核对安装和浏览器交互。
