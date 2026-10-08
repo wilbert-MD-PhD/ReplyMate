@@ -1,0 +1,22 @@
+{
+  "name": "meeting-qa-assistant",
+  "version": "2.3.0",
+  "description": "Local presentation Q&A with paired answers, prepared responses, and optional speech capture.",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test test/*.test.mjs",
+    "import": "node scripts/import-library.mjs",
+    "check": "node scripts/check-release.mjs",
+    "package": "node scripts/package-release.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wilbert-MD-PhD/meeting-qa-assistant.git"
+  }
+}

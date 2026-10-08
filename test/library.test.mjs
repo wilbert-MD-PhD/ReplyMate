@@ -1,0 +1,50 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile,mkdtemp,cp,rm,writeFile} from 'node:fs/promises';
+import {spawnSync} from 'node:child_process';
+import {tmpdir} from 'node:os';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {compileText,validateLibrary,readLibrary} from '../library.mjs';
+import {selectExcerpts,readSSE} from '../core.mjs';
+import {createPreparedIndex,findPrepared} from '../public/prepared.mjs';
+import {selectEffort} from '../bridge.mjs';
+const root=path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+const example=await readLibrary(new URL('../examples/reference.json',import.meta.url));
+test('only exact reviewed questions select prepared answers',()=>{
+ const index=createPreparedIndex(example.faq);
+ for(const f of example.faq)for(const q of [f.question,...f.aliases])assert.equal(findPrepared(index,q)?.id,f.id);
+ assert.equal(findPrepared(index,'Okay, so '+example.faq[0].question)?.id,'demo-1');
+ for(const q of ['Does it NOT collect personal data?','Does it collect 20 personal records?','Does it collect personal data and what is the budget?','And that?'])assert.equal(findPrepared(index,q),null);
+});
+test('unreviewed answers cannot bypass generation',()=>{const f={...example.faq[0],reviewed:false};assert.equal(createPreparedIndex([f]).size,0);});
+test('invalid source references and conflicting aliases fail closed',()=>{
+ const r=structuredClone(example);r.faq[0].sourceIds=['missing'];assert.throws(()=>validateLibrary(r),/unknown FAQ source/);
+ const c=structuredClone(example);c.faq[1].aliases=[c.faq[0].question];assert.throws(()=>validateLibrary(c),/冲突/);
+});
+test('text import creates a new library with no prior prepared answers',()=>{
+ const r=compileText('# Solar panels\n\nThis project measures daily panel output.','slides.md');
+ assert.equal(r.faq.length,0);assert.equal(r.sources[0].name,'slides.md');assert.match(selectExcerpts('panel output',r.chunks),/daily panel output/);
+ assert.throws(()=>compileText(''),/UTF-8/);assert.throws(()=>compileText('binary\0data'),/Binary/);
+});
+test('effort selection uses model-supported settings only',()=>{
+ assert.equal(selectEffort({id:'m',efforts:['low','high']}),'low');
+ assert.equal(selectEffort({id:'m',efforts:['medium'],defaultEffort:'medium'}),'medium');
+ assert.throws(()=>selectEffort({id:'m',efforts:['low']},'none'),/Unsupported/);
+});
+test('UTF-8 streamed text survives fragmented bytes',async()=>{
+ const b=new TextEncoder().encode('data: {"text":"用电量 / meter’s"}\n\ndata: [DONE]\n');
+ const stream=(async function*(){for(let i=0;i<b.length;i+=3)yield b.slice(i,i+3);})();
+ const out=[];for await(const x of readSSE(stream))out.push(x);assert.deepEqual(out,[{text:'用电量 / meter’s'}]);
+});
+test('import CLI supports paths with spaces and backs up the previous library',async()=>{
+ const temp=await mkdtemp(path.join(tmpdir(),'qa-import-'));
+ try{
+  await cp(path.join(root,'library.mjs'),path.join(temp,'library.mjs'));
+  await cp(path.join(root,'public'),path.join(temp,'public'),{recursive:true});
+  await cp(path.join(root,'scripts'),path.join(temp,'scripts'),{recursive:true});
+  const source=path.join(temp,'my notes.md');await writeFile(source,'# Example\n\nFirst unique text.');
+  for(const value of ['First unique text.','Second new text.']){await writeFile(source,value);const r=spawnSync(process.execPath,[path.join(temp,'scripts/import-library.mjs'),source],{encoding:'utf8'});assert.equal(r.status,0,r.stderr);}
+  const result=JSON.parse(await readFile(path.join(temp,'user-data/reference.json'),'utf8'));assert.equal(result.context,'Second new text.');assert.equal(result.faq.length,0);
+ }finally{await rm(temp,{recursive:true,force:true});}
+});

@@ -1,0 +1,82 @@
+{
+  "version": "demo-1",
+  "context": "Fictional example only. The Community Energy Dashboard shows daily electricity use in a community center. It uses manually entered meter readings. It has no personal accounts. No energy savings have been measured. The prototype is for a demonstration, not a deployed product.",
+  "terms": [
+    "kilowatt hour",
+    "meter reading",
+    "energy dashboard"
+  ],
+  "sources": [
+    {
+      "id": "demo",
+      "name": "Fictional energy dashboard notes"
+    }
+  ],
+  "chunks": [
+    {
+      "id": "purpose",
+      "sourceId": "demo",
+      "source": "Fictional energy dashboard notes",
+      "title": "Purpose and electricity use",
+      "text": "The Community Energy Dashboard shows daily electricity use in a community center using manually entered meter readings."
+    },
+    {
+      "id": "limits",
+      "sourceId": "demo",
+      "source": "Fictional energy dashboard notes",
+      "title": "Limitations and measured savings",
+      "text": "No energy savings have been measured. This is a demonstration prototype, not a deployed product. Data entry is manual."
+    },
+    {
+      "id": "privacy",
+      "sourceId": "demo",
+      "source": "Fictional energy dashboard notes",
+      "title": "Privacy and personal data",
+      "text": "The fictional prototype stores aggregate meter readings, has no personal accounts, and does not collect occupant names."
+    }
+  ],
+  "faq": [
+    {
+      "id": "demo-1",
+      "title": "Project purpose",
+      "question": "What is the purpose of this project?",
+      "questionZh": "这个项目的目的是什么？",
+      "answer": "The dashboard helps a community center see its daily electricity use. It uses manually entered meter readings, so people can discuss usage patterns. This is a fictional demonstration, not a deployed product.",
+      "aliases": [
+        "What does this project do?"
+      ],
+      "sourceIds": [
+        "demo"
+      ],
+      "reviewed": true
+    },
+    {
+      "id": "demo-2",
+      "title": "Limitations",
+      "question": "What are the limitations?",
+      "questionZh": "这个项目有哪些局限？",
+      "answer": "The prototype relies on manual data entry. It has not been deployed or evaluated, and no energy savings have been measured. We should treat it as a demonstration of how readings could be displayed.",
+      "aliases": [
+        "What are the main limitations?"
+      ],
+      "sourceIds": [
+        "demo"
+      ],
+      "reviewed": true
+    },
+    {
+      "id": "demo-3",
+      "title": "Privacy",
+      "question": "Does it collect personal data?",
+      "questionZh": "它会收集个人信息吗？",
+      "answer": "The fictional prototype uses aggregate meter readings and has no personal accounts. It does not collect occupant names. These statements describe the sample project only.",
+      "aliases": [
+        "Does the demo collect personal information?"
+      ],
+      "sourceIds": [
+        "demo"
+      ],
+      "reviewed": true
+    }
+  ]
+}
