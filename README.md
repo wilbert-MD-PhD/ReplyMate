@@ -4,6 +4,8 @@
 
 用自己的资料，准备便于口述的英文回答。ReplyMate 适用于会议汇报、面试准备与模拟练习，提供两版英文候选回答、问题的中文翻译、预设快答和历史回看。
 
+**实测70% 的问题在 3 秒内开始返回 AI 答案。** 从请求发出计时，以两版英文答案中任一版开始返回为准。使用 gpt-6.1-sol / low 和简短英文资料，双回答与翻译并发，不含语音识别、断句和排队时间。[测试方法与完整结果](docs/latency-benchmark.md)。
+
 [下载安装](https://github.com/wilbert-MD-PhD/ReplyMate/releases/latest) · [English](README.en.md) · [资料格式](docs/library-format.md)
 
 ## 下载，打开，就能体验

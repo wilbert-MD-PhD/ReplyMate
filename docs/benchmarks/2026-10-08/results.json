@@ -1,0 +1,1086 @@
+{
+  "metadata": {
+    "date": "2026-10-08",
+    "startedAt": "2026-10-08T07:38:01.916Z",
+    "version": "2.4.0",
+    "fastModel": "gpt-6.1-sol",
+    "secondaryModel": "gpt-6.1-sol",
+    "models": [
+      {
+        "id": "gpt-6.1-sol",
+        "hidden": false,
+        "isDefault": true,
+        "defaultEffort": "low",
+        "efforts": [
+          "low",
+          "medium",
+          "high",
+          "xhigh",
+          "max",
+          "ultra"
+        ],
+        "effort": "low"
+      },
+      {
+        "id": "gpt-6-astra",
+        "hidden": false,
+        "isDefault": false,
+        "defaultEffort": "medium",
+        "efforts": [
+          "low",
+          "medium",
+          "high",
+          "xhigh",
+          "max",
+          "ultra"
+        ],
+        "effort": "low"
+      },
+      {
+        "id": "gpt-6-sol",
+        "hidden": false,
+        "isDefault": false,
+        "defaultEffort": "medium",
+        "efforts": [
+          "low",
+          "medium",
+          "high",
+          "xhigh",
+          "max",
+          "ultra"
+        ],
+        "effort": "low"
+      },
+      {
+        "id": "gpt-6-luna",
+        "hidden": false,
+        "isDefault": false,
+        "defaultEffort": "medium",
+        "efforts": [
+          "low",
+          "medium",
+          "high",
+          "xhigh",
+          "max"
+        ],
+        "effort": "low"
+      },
+      {
+        "id": "gpt-5.6-sol",
+        "hidden": false,
+        "isDefault": false,
+        "defaultEffort": "low",
+        "efforts": [
+          "low",
+          "medium",
+          "high",
+          "xhigh",
+          "max",
+          "ultra"
+        ],
+        "effort": "low"
+      },
+      {
+        "id": "gpt-5.6-terra",
+        "hidden": false,
+        "isDefault": false,
+        "defaultEffort": "medium",
+        "efforts": [
+          "low",
+          "medium",
+          "high",
+          "xhigh",
+          "max",
+          "ultra"
+        ],
+        "effort": "low"
+      },
+      {
+        "id": "gpt-5.6-luna",
+        "hidden": false,
+        "isDefault": false,
+        "defaultEffort": "medium",
+        "efforts": [
+          "low",
+          "medium",
+          "high",
+          "xhigh",
+          "max"
+        ],
+        "effort": "low"
+      }
+    ],
+    "referenceVersion": "demo-1",
+    "referenceSha256": "d0189d7e3f413b80e939dca8ae0e766af58f589d3ae1dd6853f9e7600b3fe492",
+    "platform": "darwin",
+    "arch": "arm64",
+    "node": "v26.5.0",
+    "warmup": false,
+    "preparedAnswers": false,
+    "lanes": 3,
+    "measurement": "HTTP request to first non-whitespace answer delta; no ASR, browser paint or user queue; sequential questions with three concurrent lanes; all lanes finish before next question",
+    "finishedAt": "2026-10-08T07:39:57.447Z"
+  },
+  "results": [
+    {
+      "index": 1,
+      "question": "Who is the intended user of the energy dashboard?",
+      "lanes": [
+        {
+          "lane": "secondary",
+          "firstMs": 7849,
+          "text": "The intended user is someone monitoring electricity use at the community center. The reference does not specify a particular role, such as a manager or staff member. This is a demonstration prototype based on manually entered meter readings, not a deployed product.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 7841,
+            "totalMs": 9718
+          },
+          "totalMs": 9726
+        },
+        {
+          "lane": "translation",
+          "firstMs": 6595,
+          "text": "能源仪表板的目标用户是谁？",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 6585,
+            "totalMs": 7352
+          },
+          "totalMs": 7359
+        },
+        {
+          "lane": "fast",
+          "firstMs": 7485,
+          "text": "The intended user is someone responsible for monitoring electricity use at the community center, such as a facility manager or staff member who enters meter readings. The dashboard is a demonstration prototype, not a deployed product.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 7479,
+            "totalMs": 8683
+          },
+          "totalMs": 8691
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "question": "How are electricity readings entered into the system?",
+      "lanes": [
+        {
+          "lane": "secondary",
+          "firstMs": 2858,
+          "text": "Electricity meter readings are entered manually, rather than collected automatically from the meter. The reference does not specify who enters them or what input interface is used. Those readings provide the data for displaying the community center’s daily electricity use.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 2839,
+            "totalMs": 4398
+          },
+          "totalMs": 4408
+        },
+        {
+          "lane": "translation",
+          "firstMs": 3649,
+          "text": "电量读数是如何录入系统的？",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 3639,
+            "totalMs": 3936
+          },
+          "totalMs": 3947
+        },
+        {
+          "lane": "fast",
+          "firstMs": 3312,
+          "text": "Electricity meter readings are entered manually into the dashboard. It uses those readings to show the community center’s daily electricity use. The presentation notes do not specify the entry screen or who is responsible for entering the readings.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 3301,
+            "totalMs": 4884
+          },
+          "totalMs": 4895
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "question": "What evidence shows that the dashboard saves energy?",
+      "lanes": [
+        {
+          "lane": "secondary",
+          "firstMs": 3994,
+          "text": "No energy savings have been measured, so there is no evidence that this dashboard saves energy. It demonstrates daily electricity use from manually entered meter readings. Showing consumption is not the same as proving a reduction, and this prototype is for demonstration, not a deployed product.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 3989,
+            "totalMs": 6433
+          },
+          "totalMs": 6439
+        },
+        {
+          "lane": "translation",
+          "firstMs": 1601,
+          "text": "有什么证据表明该仪表板能节约能源？",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 1595,
+            "totalMs": 2160
+          },
+          "totalMs": 2165
+        },
+        {
+          "lane": "fast",
+          "firstMs": 1932,
+          "text": "No energy savings have been measured, so there is currently no evidence that the dashboard saves energy. It demonstrates daily electricity use from manually entered meter readings. Showing consumption is different from proving that the dashboard reduces it.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 1924,
+            "totalMs": 4042
+          },
+          "totalMs": 4052
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "question": "Is this system already operating in a real community center?",
+      "lanes": [
+        {
+          "lane": "secondary",
+          "firstMs": 4714,
+          "text": "No, this is a demonstration prototype, not a system already deployed in a real community center. The community center is part of the fictional example, which illustrates how daily electricity use could be displayed using manually entered meter readings.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 4710,
+            "totalMs": 6312
+          },
+          "totalMs": 6315
+        },
+        {
+          "lane": "translation",
+          "firstMs": 1836,
+          "text": "这个系统是否已经在实际的社区中心运行？",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 1821,
+            "totalMs": 2417
+          },
+          "totalMs": 2421
+        },
+        {
+          "lane": "fast",
+          "firstMs": 2374,
+          "text": "No, the system is a demonstration prototype, not a deployed product operating in a real community center. It illustrates how daily electricity use can be displayed using manually entered meter readings, but the notes do not report a live deployment.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 2371,
+            "totalMs": 5097
+          },
+          "totalMs": 5102
+        }
+      ]
+    },
+    {
+      "index": 5,
+      "question": "What information does the prototype show each day?",
+      "lanes": [
+        {
+          "lane": "secondary",
+          "firstMs": 3371,
+          "text": "The prototype shows the community center’s daily electricity use, based on manually entered meter readings. The reference does not specify any additional daily information, such as costs or emissions, and the display does not establish energy savings.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 3364,
+            "totalMs": 5043
+          },
+          "totalMs": 5051
+        },
+        {
+          "lane": "translation",
+          "firstMs": 2651,
+          "text": "原型每天显示哪些信息？",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 2639,
+            "totalMs": 3193
+          },
+          "totalMs": 3204
+        },
+        {
+          "lane": "fast",
+          "firstMs": 2761,
+          "text": "The prototype shows the community center’s daily electricity use, based on manually entered meter readings. It displays electricity consumption rather than measured energy savings, and it is intended for demonstration rather than use as a deployed product.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 2750,
+            "totalMs": 4158
+          },
+          "totalMs": 4170
+        }
+      ]
+    },
+    {
+      "index": 6,
+      "question": "Why would manual data entry limit the usefulness of this prototype?",
+      "lanes": [
+        {
+          "lane": "secondary",
+          "firstMs": 3557,
+          "text": "Manual entry could make updates less timely and introduce transcription errors or missing readings. Its usefulness would therefore depend on consistent, accurate entry. These are potential limitations, not measured problems in this prototype, and no energy savings have been demonstrated.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 3552,
+            "totalMs": 5581
+          },
+          "totalMs": 5587
+        },
+        {
+          "lane": "translation",
+          "firstMs": 1794,
+          "text": "为什么手动录入数据会限制这个原型的实用性？",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 1788,
+            "totalMs": 2432
+          },
+          "totalMs": 2437
+        },
+        {
+          "lane": "fast",
+          "firstMs": 2950,
+          "text": "Manual entry means the dashboard depends on someone recording readings consistently and accurately. Missed entries or typing errors could make the daily picture incomplete or misleading. It also takes staff time and cannot provide automatic, real-time updates from the meter.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 2945,
+            "totalMs": 4757
+          },
+          "totalMs": 4763
+        }
+      ]
+    },
+    {
+      "index": 7,
+      "question": "Can you explain the difference between displaying consumption and demonstrating savings?",
+      "lanes": [
+        {
+          "lane": "secondary",
+          "firstMs": 4012,
+          "text": "Displaying consumption shows how much electricity is used. Demonstrating savings requires evidence that use decreased compared with a suitable baseline, while accounting for other changes that could affect consumption. This prototype displays daily use, but no energy savings have been measured.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 4007,
+            "totalMs": 5469
+          },
+          "totalMs": 5474
+        },
+        {
+          "lane": "translation",
+          "firstMs": 2972,
+          "text": "你能解释一下展示能耗与证明节能之间的区别吗？",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 2965,
+            "totalMs": 3349
+          },
+          "totalMs": 3356
+        },
+        {
+          "lane": "fast",
+          "firstMs": 3423,
+          "text": "Displaying consumption shows how much electricity was used. Demonstrating savings requires evidence that electricity use fell compared with a credible baseline, accounting for changes such as opening hours or building activity. This prototype displays daily consumption, but no energy savings have been measured.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 3416,
+            "totalMs": 5466
+          },
+          "totalMs": 5473
+        }
+      ]
+    },
+    {
+      "index": 8,
+      "question": "Would occupants need to create an account to use this demonstration?",
+      "lanes": [
+        {
+          "lane": "secondary",
+          "firstMs": 3107,
+          "text": "No, occupants would not need to create a personal account. The demonstration prototype has no personal accounts. It shows the community center’s daily electricity use using manually entered meter readings, rather than providing individual occupant profiles.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 3098,
+            "totalMs": 5005
+          },
+          "totalMs": 5014
+        },
+        {
+          "lane": "translation",
+          "firstMs": 2153,
+          "text": "使用这个演示时，使用者需要创建账户吗？",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 2144,
+            "totalMs": 2896
+          },
+          "totalMs": 2906
+        },
+        {
+          "lane": "fast",
+          "firstMs": 3290,
+          "text": "No, occupants would not need to create an account because the demonstration has no personal accounts. It shows the community center’s aggregate electricity use from manually entered meter readings, rather than tracking individual occupants or their personal energy use.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 3280,
+            "totalMs": 4665
+          },
+          "totalMs": 4676
+        }
+      ]
+    },
+    {
+      "index": 9,
+      "question": "How does the sample project handle occupant names?",
+      "lanes": [
+        {
+          "lane": "secondary",
+          "firstMs": 3484,
+          "text": "The sample project does not collect occupant names. It stores aggregate meter readings and has no personal accounts, so the example concerns the community center’s overall electricity use rather than named occupants. The reference does not describe any broader privacy or security safeguards.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 3459,
+            "totalMs": 5195
+          },
+          "totalMs": 5220
+        },
+        {
+          "lane": "translation",
+          "firstMs": 2062,
+          "text": "示例项目如何处理使用者的姓名？",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 2036,
+            "totalMs": 2781
+          },
+          "totalMs": 2804
+        },
+        {
+          "lane": "fast",
+          "firstMs": 2440,
+          "text": "The sample project does not collect occupant names. It stores aggregate meter readings for the community center and has no personal accounts, so the information shown concerns the building’s electricity use rather than named individuals.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 2418,
+            "totalMs": 3615
+          },
+          "totalMs": 3637
+        }
+      ]
+    },
+    {
+      "index": 10,
+      "question": "Can the dashboard automatically read smart meters?",
+      "lanes": [
+        {
+          "lane": "secondary",
+          "firstMs": 3116,
+          "text": "The prototype uses manually entered meter readings, so automatic smart-meter reading is not a demonstrated capability. The reference does not describe a smart-meter connection or integration. It should be presented as a manual-entry demonstration, not an automated monitoring system.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 3106,
+            "totalMs": 4702
+          },
+          "totalMs": 4712
+        },
+        {
+          "lane": "translation",
+          "firstMs": 1925,
+          "text": "仪表板能自动读取智能电表的数据吗？",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 1914,
+            "totalMs": 2800
+          },
+          "totalMs": 2810
+        },
+        {
+          "lane": "fast",
+          "firstMs": 3425,
+          "text": "No, this prototype relies on manually entered meter readings. Automatic smart-meter reading is not a feature described in the presentation. The demonstration shows daily electricity use based on the readings someone enters, rather than an automatic feed from a meter.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 3415,
+            "totalMs": 5207
+          },
+          "totalMs": 5217
+        }
+      ]
+    },
+    {
+      "index": 11,
+      "question": "What would you need to evaluate before claiming a reduction in electricity use?",
+      "lanes": [
+        {
+          "lane": "secondary",
+          "firstMs": 2235,
+          "text": "A credible reduction claim would require accurate readings and a suitable baseline, accounting for factors such as weather, opening hours, and occupancy. Attributing that reduction to the dashboard would also require a comparison that separates its effect from other changes. No savings have been measured in this prototype.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 2227,
+            "totalMs": 4694
+          },
+          "totalMs": 4701
+        },
+        {
+          "lane": "translation",
+          "firstMs": 2247,
+          "text": "在声称用电量减少之前，你需要评估哪些方面？",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 2242,
+            "totalMs": 2770
+          },
+          "totalMs": 2775
+        },
+        {
+          "lane": "fast",
+          "firstMs": 4359,
+          "text": "A credible evaluation would compare electricity use before and after introducing the dashboard, accounting for factors such as weather, opening hours, and occupancy. It would also need reliable readings and evidence that any reduction was attributable to the dashboard. No savings have been measured for this prototype.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 4354,
+            "totalMs": 6441
+          },
+          "totalMs": 6449
+        }
+      ]
+    },
+    {
+      "index": 12,
+      "question": "How could incorrect meter readings affect the dashboard?",
+      "lanes": [
+        {
+          "lane": "secondary",
+          "firstMs": 2478,
+          "text": "Incorrect meter readings could make the displayed daily electricity use inaccurate, creating misleading spikes, drops, or trends. Because entry is manual, checking readings against the meter would help reduce that risk. These are possible effects, not errors documented in the prototype.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 2472,
+            "totalMs": 4533
+          },
+          "totalMs": 4539
+        },
+        {
+          "lane": "translation",
+          "firstMs": 2281,
+          "text": "错误的电表读数会如何影响仪表板？",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 2273,
+            "totalMs": 2478
+          },
+          "totalMs": 2485
+        },
+        {
+          "lane": "fast",
+          "firstMs": 2476,
+          "text": "Incorrect meter readings could make the dashboard show electricity use that is too high or too low, creating misleading spikes or trends. Because entry is manual, checking readings against the meter and correcting mistakes would be important for keeping the daily display reliable.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 2470,
+            "totalMs": 4331
+          },
+          "totalMs": 4338
+        }
+      ]
+    },
+    {
+      "index": 13,
+      "question": "Could this demonstration be used to compare usage patterns over time?",
+      "lanes": [
+        {
+          "lane": "secondary",
+          "firstMs": 7039,
+          "text": "Yes, the demonstration could compare daily electricity use over time using the manually entered meter readings. Any apparent pattern would depend on those readings being accurate and consistent. It could show changes in recorded use, but it would not establish that the dashboard caused energy savings.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 7029,
+            "totalMs": 9169
+          },
+          "totalMs": 9176
+        },
+        {
+          "lane": "translation",
+          "firstMs": 7197,
+          "text": "能否用这个演示来比较不同时期的用电模式？",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 7192,
+            "totalMs": 8041
+          },
+          "totalMs": 8047
+        },
+        {
+          "lane": "fast",
+          "firstMs": 7470,
+          "text": "Yes, the demonstration could compare daily electricity use over time using manually entered meter readings. Meaningful comparisons would need consistent reading intervals and accurate entries, with changes in opening hours or activities taken into account. Those patterns alone would not establish energy savings, and none have been measured.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 7466,
+            "totalMs": 9948
+          },
+          "totalMs": 9954
+        }
+      ]
+    },
+    {
+      "index": 14,
+      "question": "What is the strongest claim supported by the presentation notes?",
+      "lanes": [
+        {
+          "lane": "secondary",
+          "firstMs": 3379,
+          "text": "The strongest supported claim is that the Community Energy Dashboard is a demonstration prototype showing daily electricity use in a community center from manually entered meter readings. It has no personal accounts, is not a deployed product, and has no measured energy savings.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 3353,
+            "totalMs": 4611
+          },
+          "totalMs": 4630
+        },
+        {
+          "lane": "translation",
+          "firstMs": 3662,
+          "text": "演示文稿的备注能支持的最强结论是什么？",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 3644,
+            "totalMs": 4608
+          },
+          "totalMs": 4629
+        },
+        {
+          "lane": "fast",
+          "firstMs": 5744,
+          "text": "The strongest supported claim is that this fictional demonstration prototype shows daily electricity use in a community center using manually entered meter readings. It has no personal accounts and is not a deployed product. The notes do not support a claim that it reduces electricity use, because no energy savings have been measured.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 5728,
+            "totalMs": 7130
+          },
+          "totalMs": 7148
+        }
+      ]
+    },
+    {
+      "index": 15,
+      "question": "How much money has the community center saved so far?",
+      "lanes": [
+        {
+          "lane": "secondary",
+          "firstMs": 2340,
+          "text": "No financial savings figure is supported by the presentation notes. No energy savings have been measured, so there is no basis for calculating money saved. The dashboard is a demonstration of daily electricity use, not evidence of reduced costs.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 2330,
+            "totalMs": 3837
+          },
+          "totalMs": 3847
+        },
+        {
+          "lane": "translation",
+          "firstMs": 2782,
+          "text": "社区中心到目前为止节省了多少钱？",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 2771,
+            "totalMs": 3300
+          },
+          "totalMs": 3312
+        },
+        {
+          "lane": "fast",
+          "firstMs": 3574,
+          "text": "No financial savings have been established. The presentation notes say that no energy savings have been measured, and they provide no cost data. This is a fictional demonstration prototype, so there is no supported amount of money saved to report.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 3563,
+            "totalMs": 5287
+          },
+          "totalMs": 5303
+        }
+      ]
+    },
+    {
+      "index": 16,
+      "question": "What additional work would be needed before a real deployment?",
+      "lanes": [
+        {
+          "lane": "secondary",
+          "firstMs": 3056,
+          "text": "A real deployment would need reliable meter-entry procedures, checks for missing or incorrect readings, user testing, and a plan for operation and maintenance. Security and privacy requirements would also need assessment. These are proposed next steps, not completed work documented in the presentation notes.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 3041,
+            "totalMs": 4697
+          },
+          "totalMs": 4710
+        },
+        {
+          "lane": "translation",
+          "firstMs": 3838,
+          "text": "在实际部署之前，还需要做哪些工作？",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 3825,
+            "totalMs": 4470
+          },
+          "totalMs": 4482
+        },
+        {
+          "lane": "fast",
+          "firstMs": 2695,
+          "text": "Before a real deployment, the prototype would need testing for meter-reading accuracy, reliable daily-use calculations, and usability. Data handling, security, maintenance responsibilities, and operation in the community center would also need review. These are proposed next steps, not completed work documented in the presentation notes.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 2681,
+            "totalMs": 4846
+          },
+          "totalMs": 4859
+        }
+      ]
+    },
+    {
+      "index": 17,
+      "question": "Why should the audience treat these results cautiously?",
+      "lanes": [
+        {
+          "lane": "secondary",
+          "firstMs": 2367,
+          "text": "The audience should be cautious because this is a fictional demonstration prototype, not a deployed product or an evaluation of effectiveness. It uses manually entered meter readings, which could contain errors. No energy savings have been measured, so the presentation does not establish reduced electricity use or lower costs.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 2364,
+            "totalMs": 4132
+          },
+          "totalMs": 4136
+        },
+        {
+          "lane": "translation",
+          "firstMs": 2919,
+          "text": "为什么观众应谨慎看待这些结果？",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 2916,
+            "totalMs": 3202
+          },
+          "totalMs": 3205
+        },
+        {
+          "lane": "fast",
+          "firstMs": 3390,
+          "text": "The audience should be cautious because this is a fictional demonstration prototype, not a deployed product. It relies on manually entered meter readings, so entry errors could affect the displayed electricity use. No energy savings have been measured, so the presentation does not establish reductions in electricity use or costs.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 3388,
+            "totalMs": 4911
+          },
+          "totalMs": 4915
+        }
+      ]
+    },
+    {
+      "index": 18,
+      "question": "Would this prototype tell us which individual uses the most electricity?",
+      "lanes": [
+        {
+          "lane": "secondary",
+          "firstMs": 1921,
+          "text": "No, the prototype shows electricity use for the community center as a whole, not for individual people. It uses manually entered meter readings and has no personal accounts. Those readings do not provide a basis for identifying who uses the most electricity.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 1918,
+            "totalMs": 3492
+          },
+          "totalMs": 3497
+        },
+        {
+          "lane": "translation",
+          "firstMs": 1923,
+          "text": "这个原型能告诉我们哪个人用电最多吗？",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 1920,
+            "totalMs": 2159
+          },
+          "totalMs": 2163
+        },
+        {
+          "lane": "fast",
+          "firstMs": 2217,
+          "text": "No, the prototype shows electricity use for the community center, not for individual people. It uses manually entered meter readings and has no personal accounts. Those readings do not provide a basis for identifying who uses the most electricity.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 2214,
+            "totalMs": 3926
+          },
+          "totalMs": 3931
+        }
+      ]
+    },
+    {
+      "index": 19,
+      "question": "If someone asks whether the product is validated, how should we respond?",
+      "lanes": [
+        {
+          "lane": "secondary",
+          "firstMs": 2391,
+          "text": "The presentation notes do not establish that the prototype is validated. It is a fictional demonstration, not a deployed product, and no energy savings have been measured. Any claim of validation would need evidence of testing against clearly defined criteria, which the notes do not provide.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 2387,
+            "totalMs": 3469
+          },
+          "totalMs": 3473
+        },
+        {
+          "lane": "translation",
+          "firstMs": 3181,
+          "text": "如果有人问这款产品是否经过验证，我们该如何回应？",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 3178,
+            "totalMs": 3832
+          },
+          "totalMs": 3835
+        },
+        {
+          "lane": "fast",
+          "firstMs": 3730,
+          "text": "The presentation notes do not establish that the prototype is validated. It is a fictional demonstration, not a deployed product, and no energy savings have been measured. Any claim of validation would need supporting evidence and a clear statement of what was tested.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 3727,
+            "totalMs": 4922
+          },
+          "totalMs": 4925
+        }
+      ]
+    },
+    {
+      "index": 20,
+      "question": "How would you summarize the practical value and the main limitation together?",
+      "lanes": [
+        {
+          "lane": "secondary",
+          "firstMs": 1888,
+          "text": "Its practical value is demonstrating how manually entered meter readings can make a community center’s daily electricity use visible. Its main limitation is that this fictional prototype has not demonstrated energy savings or real-world effectiveness. It illustrates an idea, but does not establish an impact.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 1877,
+            "totalMs": 3335
+          },
+          "totalMs": 3340
+        },
+        {
+          "lane": "translation",
+          "firstMs": 1890,
+          "text": "你会如何同时概括它的实际价值和主要局限？",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 1885,
+            "totalMs": 2751
+          },
+          "totalMs": 2761
+        },
+        {
+          "lane": "fast",
+          "firstMs": 2410,
+          "text": "Its practical value is showing daily electricity use in a community center, making usage patterns easier to discuss. Its main limitation is that it remains a fictional demonstration based on manually entered readings, with no measured energy savings or evidence of performance in a real deployment.",
+          "completed": true,
+          "details": {
+            "model": "gpt-6.1-sol",
+            "tier": "default",
+            "effort": "low",
+            "serverFirstMs": 2407,
+            "totalMs": 4394
+          },
+          "totalMs": 4399
+        }
+      ]
+    }
+  ]
+}

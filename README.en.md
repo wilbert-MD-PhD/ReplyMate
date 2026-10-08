@@ -4,6 +4,8 @@
 
 Prepare spoken-style English answers from your own reference material. ReplyMate offers two independently streamed answers, Chinese question translations, prepared responses and answer history. The interface is in Chinese.
 
+**In a local 20-question pilot, 70% of questions began receiving an AI answer within 3 seconds.** Measured from request dispatch to the first returned text from either English answer, using gpt-6.1-sol / low and short English reference material, with both answers and translation running concurrently. Excludes speech recognition, utterance detection and queue time. [Method and full results](docs/latency-benchmark.md).
+
 [Download the desktop app](https://github.com/wilbert-MD-PhD/ReplyMate/releases/latest) · [中文说明](README.md)
 
 ## Download and open

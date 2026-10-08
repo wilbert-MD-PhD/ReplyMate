@@ -1,5 +1,9 @@
 # Validation scope
 
+## Response latency pilot — 2026-10-08
+
+In a local 20-question source-service test, 14/20 questions (70%) received the first text from either English answer within 3 seconds of request dispatch; 18/20 (90%) did so within 5 seconds. Median time to the first of the two answers was 2.59 seconds. The fast-answer lane alone reached 3 seconds in 9/20 cases (45%). The test used gpt-6.1-sol / low, short fictional reference material, concurrent answer/answer/translation requests, no explicit warm-up and no prepared-answer shortcut. It excludes speech recognition, utterance detection, user queue time and browser rendering. This is a small source-service pilot, not an installer benchmark or a universal latency guarantee. See [method, per-question timings and raw data](latency-benchmark.md).
+
 ## 2.4.0 desktop release
 
 Local verification on 2026-10-08 passed 62 automated tests, including account lifecycle and login URL validation, local DOCX/PPTX/PDF extraction, backup preservation, authenticated imports and immediate reference replacement. Browser checks covered the new first-run page, file-picker import and automatic reload, paired demo answers, and opening/cancelling the official login flow in an isolated account directory. No maintainer credentials are included in builds.
