@@ -15,7 +15,7 @@ The two answers have independent queues and stream as they are generated, so you
 ## Quick start
 
 Install [Node.js 22+](https://nodejs.org/), download and extract the release ZIP,
-then run `npm start`. Open **http://127.0.0.1:8780**.
+then run `npm start`. Open [http://127.0.0.1:8780](http://127.0.0.1:8780).
 There are no third-party npm runtime dependencies or frontend build steps.
 Launchers: `start.command` (macOS), `sh start.sh` (Linux), `start.bat` (Windows demo).
 

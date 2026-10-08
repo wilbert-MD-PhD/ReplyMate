@@ -17,7 +17,7 @@ ReplyMate（答伴）是一款开源的英文问答辅助工具，适用于会�
 
 1. 在 [Releases](https://github.com/wilbert-MD-PhD/ReplyMate/releases/latest) 下载最新版 ZIP 压缩包并解压。
 2. 在解压后的目录运行 `npm start`。也可双击 macOS 的 `start.command` 或 Windows 的 `start.bat`，Linux 执行 `sh start.sh`。
-3. 打开 **http://127.0.0.1:8780**，点击页面下方的 `Project purpose` 示例问题。
+3. 打开 [http://127.0.0.1:8780](http://127.0.0.1:8780)，点击页面下方的 `Project purpose` 示例问题。
 
 默认是**离线演示**：不需要登录，不调用 AI。预设答案和资料摘录均来自虚构的“社区用电看板”示例。
 这用于体验交互，真实回答和自动翻译需要下面的 Codex 配置。
