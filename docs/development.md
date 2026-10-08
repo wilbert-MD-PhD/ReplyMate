@@ -4,7 +4,9 @@
 
 源码模式需要 Node.js 22.13+，先运行 `npm ci --ignore-scripts`。默认 `npm start` 启动离线演示，安装 Codex CLI 后可通过页面按钮登录。设置 `QA_BACKEND=auto` 可在启动时检查现有登录，未登录时保留演示。`QA_BACKEND=codex` 同样会在启动时连接 Codex，未登录时可通过页面完成登录。
 
-`.env.example` 列出可选模型、端口及语音设置。模型默认自动选择，无需填写模型名称。`QA_FAST_EFFORT` 和 `QA_SECONDARY_EFFORT` 必须是模型支持的推理强度。
+`.env.example` 列出可选模型、端口及语音设置。默认快速通道使用两个可用模型竞速（优先纳入账号默认模型，排除独立深度模型），先返回非空正文者胜出。候选列表不是实测延迟排名，页面会显示实际候选。`QA_FAST_MODEL` 留空或设为 `race` 开启默认竞速，也可填单模型 ID。`QA_SECONDARY_MODEL` 留空时使用 `gpt-6-astra`，不可用时提示用户选择，避免静默替换。页面中的深度模型选择在当前会话有效。
+
+快速模型默认使用支持的最低推理强度；深度模型使用目录中的默认推理强度。`QA_FAST_EFFORT` 和 `QA_SECONDARY_EFFORT` 可覆盖这两个默认值，但必须受所选模型支持。两路使用独立会话和队列，竞速取消仅作用于快速通道。
 
 ## 可选本地语音识别
 
@@ -15,7 +17,7 @@ WHISPER_BIN=whisper-server
 WHISPER_MODEL=models/your-whisper-model.bin
 ```
 
-重启后，页面显示“本地 Whisper 已就绪”才表示可用。使用支持 `--request-path`、`--public` 和 `/inference` 的服务版本。桌面版使用系统浏览器的语音识别，不附带 Whisper 模型。
+重启后，页面显示“本地 Whisper 已就绪”才表示可用。使用支持 `--request-path`、`--public` 和 `/inference` 的服务版本。桌面版通过组件中心安装本地 Whisper 引擎和模型，也可选择系统浏览器语音识别。详见 [组件开发与验收](components.md)。
 
 ## 桌面包
 

@@ -4,8 +4,9 @@ import {mkdtemp,readFile,readdir,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {zipSync,strToU8} from 'fflate';
-import {parseImport,saveLibrary,maxImportBytes} from '../workspace.mjs';
+import {parseImport as parseImportCore,saveLibrary,maxImportBytes} from '../workspace.mjs';
 
+const parseImport=(name,data)=>parseImportCore(name,data,{parser:id=>import('../plugins/'+id+'/index.mjs')});
 const zip=files=>Buffer.from(zipSync(Object.fromEntries(Object.entries(files).map(([k,v])=>[k,strToU8(v)]))));
 test('imports text, clears sample FAQ, backs up replaced data and preserves invalid input',async()=>{
  const dir=await mkdtemp(path.join(tmpdir(),'replymate-import-test-'));
@@ -37,4 +38,13 @@ test('imports PDF text without OCR or network downloads',async()=>{
  let pdf='%PDF-1.4\n',offsets=[0];for(const [i,obj] of objects.entries()){offsets.push(Buffer.byteLength(pdf));pdf+=`${i+1} 0 obj\n${obj}\nendobj\n`;}
  const xref=Buffer.byteLength(pdf);pdf+=`xref\n0 6\n0000000000 65535 f \n${offsets.slice(1).map(n=>String(n).padStart(10,'0')+' 00000 n ').join('\n')}\ntrailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`;
  const library=await parseImport('reference.pdf',Buffer.from(pdf));assert.match(library.context,/18 teams/);
+});
+
+test('Office plugin preserves table text and PPT presentation order plus speaker notes',async()=>{
+ const office=await import('../plugins/docs-office/index.mjs');
+ const word=zip({'word/document.xml':'<w:document xmlns:w="urn:w"><w:p><w:r><w:t>前言</w:t></w:r></w:p><w:tbl><w:tr><w:tc><w:p><w:r><w:t>组别</w:t></w:r></w:p></w:tc><w:tc><w:p><w:r><w:t>结果</w:t></w:r></w:p></w:tc></w:tr></w:tbl></w:document>'});
+ assert.match(await office.extract(word,'.docx'),/前言[\s\S]*组别[\s\S]*结果/);
+ const ppt=zip({'ppt/presentation.xml':'<p:presentation xmlns:p="urn:p" xmlns:r="urn:r"><p:sldIdLst><p:sldId r:id="two"/><p:sldId r:id="one"/></p:sldIdLst></p:presentation>','ppt/_rels/presentation.xml.rels':'<Relationships><Relationship Id="one" Target="slides/slide1.xml"/><Relationship Id="two" Target="slides/slide2.xml"/></Relationships>','ppt/slides/slide1.xml':'<a:p xmlns:a="urn:a"><a:r><a:t>second slide</a:t></a:r></a:p>','ppt/slides/slide2.xml':'<a:p xmlns:a="urn:a"><a:r><a:t>first slide</a:t></a:r></a:p>','ppt/slides/_rels/slide2.xml.rels':'<Relationships><Relationship Id="note" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/notesSlide" Target="../notesSlides/notesSlide2.xml"/></Relationships>','ppt/notesSlides/notesSlide2.xml':'<a:p xmlns:a="urn:a"><a:r><a:t>speaker note</a:t></a:r></a:p>'});
+ assert.match(await office.extract(ppt,'.pptx'),/first slide[\s\S]*speaker note[\s\S]*second slide/);
+ await assert.rejects(office.extract(zip({'word/document.xml':'<!DOCTYPE foo [<!ENTITY x "bad">]><foo>&x;</foo>'}),'.docx'),/实体/);
 });

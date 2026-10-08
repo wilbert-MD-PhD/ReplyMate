@@ -1,0 +1,2 @@
+export const speechBudget={loadMs:90000,queueMs:10000,inferenceMs:45000,requestMs:150000,maxQueue:3};
+export const browserLocales={en:'en-US',zh:'zh-CN',yue:'zh-HK',ja:'ja-JP',ko:'ko-KR',fr:'fr-FR',de:'de-DE',es:'es-ES',pt:'pt-PT',it:'it-IT',ru:'ru-RU',el:'el-GR',tr:'tr-TR',ar:'ar-SA',hi:'hi-IN',th:'th-TH',vi:'vi-VN',id:'id-ID',nl:'nl-NL',pl:'pl-PL',uk:'uk-UA',sv:'sv-SE',da:'da-DK',fi:'fi-FI',he:'he-IL',cs:'cs-CZ',ro:'ro-RO',hu:'hu-HU'};

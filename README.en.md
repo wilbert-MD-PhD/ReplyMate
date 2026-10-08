@@ -1,10 +1,17 @@
-# ReplyMate · 答伴
+# ReplyMate
+
+Version 2.5 introduces a lightweight core and optional AI, Office, PDF, and local Whisper components. Components download only after an explicit install action. Once AI is installed and signed in, startup automatically warms the real answer sessions and shows progress.
+
+The prominent performance target is the first quick-answer character within 3 seconds of submission. Actual latency remains visible per answer; prepared answers do not count as model latency. See [component development](docs/components.md) and [release notes](docs/release-v2.5.0.md).
+
 
 **会议问答助手 · 面试答题神器** — your companion for meeting Q&A and interview practice.
 
-Prepare spoken-style English answers from your own reference material. ReplyMate offers two independently streamed answers, Chinese question translations, prepared responses and answer history. The interface is in Chinese.
+ReplyMate pairs speed with depth for meeting Q&A and interview practice. **Fast answers race multiple models and stream the first model to return answer text. Deep answers run independently on the strongest model, GPT-6 Astra by default.** Both lanes start together; slower deep answers never block the next fast answer. Responses are currently in English, with Chinese question translations, prepared responses and answer history. The interface is in Chinese.
 
-**In a local 20-question pilot, 70% of questions began receiving an AI answer within 3 seconds.** Measured from request dispatch to the first returned text from either English answer, using gpt-6.1-sol / low and short English reference material, with both answers and translation running concurrently. Excludes speech recognition, utterance detection and queue time. [Method and full results](docs/latency-benchmark.md).
+The source changes are not yet included in the linked v2.4.0 installers. The earlier “70% within 3 seconds” pilot used two requests to the same model and does not measure this restored architecture. [Historical method and results](docs/latency-benchmark.md).
+
+By default, two available models race for the fast lane; losing requests are cancelled after the first non-whitespace answer text. Astra runs separately with its catalog-default reasoning effort. The page shows both choices and allows manual overrides. If only one fast model is available, the page states that a race cannot run. If Astra is unavailable, select a deep model explicitly; the app does not silently substitute the fast model.
 
 [Download the desktop app](https://github.com/wilbert-MD-PhD/ReplyMate/releases/latest) · [中文说明](README.md)
 

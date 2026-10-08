@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.5.0
+
+- Split AI, Office, PDF and Whisper into verified optional components; core has no production dependencies.
+- Add transactional installation, pause/resume, manual import, repair, uninstall and rollback.
+- Warm answer and translation sessions automatically at startup with visible progress; display the 3-second first-character goal.
+- Add seven pinned Whisper model variants, language settings, Unicode text handling and bounded cancellable transcription.
+
+
+## Unreleased
+
+- Restores the original speed/depth design: race two fast models by default, keep the first non-empty responder, and cancel only the losing fast request.
+- Reserves GPT-6 Astra for independent deep answers with its catalog-default reasoning effort and a visible model selector; missing Astra requires an explicit choice.
+- Replaces generic paired-answer copy and separates the old same-model latency pilot from current behavior.
+
 ## 2.4.0 — 2026-10-08
 
 - Adds desktop installers with bundled runtime and Codex, automatic browser launch and an automatically assigned local port.

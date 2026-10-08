@@ -13,3 +13,10 @@ coverage/
 
 build/codex/
 build/codex-version.txt
+
+build/core/
+build/component-staging/
+build/whisper-source/
+build/whisper-runtime/
+build/tooling/
+components/catalog.generated.json

@@ -1,8 +1,8 @@
 // Only reviewed, exact phrasings can bypass live generation. Preserve negation/numbers.
 export function normalizePreparedQuestion(text){
- let t=String(text||'').toLowerCase().trim();
+ let t=String(text||'').normalize('NFKC').toLocaleLowerCase().trim();
  for(let i=0;i<4;i++)t=t.replace(/^(?:thank you|thanks|okay|ok|so|well|my question is|i would like to ask)[,.:!\s]+/,'');
- return t.replace(/[^a-z0-9]/g,'');
+ return t.replace(/[^\p{L}\p{N}]/gu,'');
 }
 export function createPreparedIndex(entries){
  const index=new Map();

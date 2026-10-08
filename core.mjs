@@ -1,6 +1,7 @@
-export function normalizeQuestion(text){return text.toLowerCase().replace(/[^a-z0-9]/g,'');}
+export function normalizeQuestion(text){return text.normalize('NFKC').toLocaleLowerCase().replace(/[^\p{L}\p{N}]/gu,'');}
 const stop=new Set('what why when how is are the a an of in to do does we you our and for this that it with would could should can please your explain tell me method approach'.split(' '));
-const tokens=s=>[...new Set((s.toLowerCase().match(/[a-z][a-z0-9-]*|\d+(?:\.\d+)?/g)||[]).filter(t=>!stop.has(t)))];
+const segmenter=new Intl.Segmenter(undefined,{granularity:'word'});
+const tokens=s=>[...new Set([...segmenter.segment(s.normalize('NFKC').toLocaleLowerCase())].filter(x=>x.isWordLike).map(x=>x.segment).filter(t=>!stop.has(t)))];
 const indexes=new WeakMap();
 export function prepareRetrieval(chunks){
  if(indexes.has(chunks))return indexes.get(chunks);

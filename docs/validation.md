@@ -2,7 +2,7 @@
 
 ## Response latency pilot — 2026-10-08
 
-In a local 20-question source-service test, 14/20 questions (70%) received the first text from either English answer within 3 seconds of request dispatch; 18/20 (90%) did so within 5 seconds. Median time to the first of the two answers was 2.59 seconds. The fast-answer lane alone reached 3 seconds in 9/20 cases (45%). The test used gpt-6.1-sol / low, short fictional reference material, concurrent answer/answer/translation requests, no explicit warm-up and no prepared-answer shortcut. It excludes speech recognition, utterance detection, user queue time and browser rendering. This is a small source-service pilot, not an installer benchmark or a universal latency guarantee. See [method, per-question timings and raw data](latency-benchmark.md).
+This historical pilot used the same model for both answer lanes; it does not measure the restored fast-race/independent-Astra defaults. In a local 20-question source-service test, 14/20 questions (70%) received the first text from either English answer within 3 seconds of request dispatch; 18/20 (90%) did so within 5 seconds. Median time to the first of the two answers was 2.59 seconds. The fast-answer lane alone reached 3 seconds in 9/20 cases (45%). The test used gpt-6.1-sol / low, short fictional reference material, concurrent answer/answer/translation requests, no explicit warm-up and no prepared-answer shortcut. It excludes speech recognition, utterance detection, user queue time and browser rendering. This is a small source-service pilot, not an installer benchmark or a universal latency guarantee. See [method, per-question timings and raw data](latency-benchmark.md).
 
 ## 2.4.0 desktop release
 

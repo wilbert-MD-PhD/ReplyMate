@@ -5,7 +5,7 @@ import {compileText, validateLibrary} from './library.mjs';
 
 export const importExtensions = ['.md', '.txt', '.json', '.docx', '.pptx', '.pdf'];
 export const maxImportBytes = 20_000_000;
-export async function parseImport(name, data) {
+export async function parseImport(name, data, {parser}={}) {
   name = path.basename(String(name).replaceAll('\\', '/'));
   const ext = path.extname(name).toLowerCase();
   if (!importExtensions.includes(ext)) throw Error('请选择 Word、PowerPoint、PDF、Markdown、TXT 或资料 JSON 文件');
@@ -17,9 +17,9 @@ export async function parseImport(name, data) {
   let text;
   if (ext === '.md' || ext === '.txt') text = new TextDecoder('utf-8', {fatal:true}).decode(data);
   else {
-    const {OfficeParser} = await import('officeparser');
-    const ast = await OfficeParser.parseOffice(data, {fileType:ext.slice(1), ocr:false, extractAttachments:false, ignoreNotes:false, signal:AbortSignal.timeout(30_000)});
-    text = (await ast.to('text', {textConfig:{preserveLayout:false}})).value;
+    const id=ext==='.pdf'?'docs-pdf':'docs-office';
+    if(!parser){const {ComponentRequired}=await import('./components/runtime-resolver.mjs');throw new ComponentRequired(id);}
+    text=await (await parser(id)).extract(data,ext);
     if (!text?.trim()) throw Error('未提取到文字。扫描件和图片请先识别文字后导入');
   }
   return compileText(text, name);

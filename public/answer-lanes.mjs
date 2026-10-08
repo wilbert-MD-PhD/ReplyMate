@@ -1,4 +1,4 @@
-// Each lane is serial, while fast answers, 第二回答 and translation run independently.
+// Each lane is serial, while fast answers, deep answers and translation run independently.
 export class AnswerLanes {
  constructor(){this.tails=new Map();this.tasks=new Set();}
  enqueue(lane,key,run){

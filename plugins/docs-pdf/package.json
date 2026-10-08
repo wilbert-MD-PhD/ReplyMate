@@ -1,0 +1,10 @@
+{
+  "name": "replymate-docs-pdf",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "dependencies": {
+    "pdfjs-dist": "6.2.108"
+  }
+}

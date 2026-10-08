@@ -5,7 +5,7 @@ import {QuestionStore} from '../public/logic.mjs';
 import {CodexBridge} from '../bridge.mjs';
 const deferred=()=>{let resolve;const promise=new Promise(r=>resolve=r);return {promise,resolve};};
 
-test('slow 第二回答 does not block fast answers or translation; its own questions stay ordered',async()=>{
+test('slow deep answer does not block fast answers or translation; its own questions stay ordered',async()=>{
  const lanes=new AnswerLanes(),gate=deferred(),started=deferred(),events=[];
  const a=lanes.enqueue('secondary','q1',async()=>{events.push('a1');started.resolve();await gate.promise;events.push('a1 done');});
  await started.promise;
@@ -22,7 +22,7 @@ test('cancelling one question cancels its queued companion without losing the ne
  const next=lanes.enqueue('secondary','next',()=>42);gate.resolve();await first;await rejected;
  assert.equal(ran,false);assert.equal(await next,42);assert.equal(lanes.tasks.size,0);
 });
-test('failed 第二回答 request releases its lane for the next question',async()=>{
+test('failed deep answer request releases its lane for the next question',async()=>{
  const lanes=new AnswerLanes();await assert.rejects(lanes.enqueue('secondary','q1',()=>{throw Error('offline');}));
  assert.equal(await lanes.enqueue('secondary','q2',()=>true),true);
 });
@@ -39,4 +39,12 @@ test('question translation has a separate session and language policy from Engli
  assert.match(calls[0].developerInstructions,/Only return the English answer/);
  assert.match(calls[1].developerInstructions,/Simplified Chinese translation/);
  assert.doesNotMatch(calls[1].baseInstructions,/REFERENCE:/);
+});
+test('deep model keeps its own reasoning default and session even when also requested for speed',async()=>{
+ const b=Object.create(CodexBridge.prototype),calls=[];b.ready=Promise.resolve();b.sessions=new Map();
+ b.models=[{id:'quality-model',effort:'low',defaultEffort:'medium',efforts:['low','medium']}];b.reference={context:'reference'};b.cwd='/tmp';
+ b.rpc=async(method,p)=>{calls.push(p);return {thread:{id:String(calls.length)},model:p.model};};
+ const fast=await b.session('quality-model','q'),deep=await b.session('quality-model','q:secondary');
+ assert.notEqual(fast.id,deep.id);assert.equal(fast.effort,'low');assert.equal(deep.effort,'medium');
+ assert.equal(calls[1].config.model_reasoning_effort,'medium');
 });

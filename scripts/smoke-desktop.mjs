@@ -1,10 +1,10 @@
 import {spawn} from 'node:child_process';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-const root=path.dirname(path.dirname(fileURLToPath(import.meta.url)));
-const rel=process.platform==='darwin'?`dist/desktop/mac${process.arch==='arm64'?'-arm64':''}/ReplyMate.app/Contents/MacOS/ReplyMate`:process.platform==='win32'?'dist/desktop/win-unpacked/ReplyMate.exe':'dist/desktop/linux-unpacked/replymate';
-const child=spawn(path.join(root,rel),['--smoke-test'],{stdio:['ignore','pipe','pipe'],windowsHide:true,env:{...process.env,PATH:process.platform==='win32'?path.join(process.env.SystemRoot||'C:\\Windows','System32'):'/usr/bin:/bin',OPENAI_API_KEY:'',CODEX_API_KEY:''}});
-let output='';child.stdout.on('data',d=>{output+=d;process.stdout.write(d);});child.stderr.on('data',d=>process.stderr.write(d));
-const timeout=setTimeout(()=>{child.kill();process.exitCode=1;},45000);
-child.on('error',e=>{clearTimeout(timeout);console.error(e.message);process.exitCode=1;});
-child.on('exit',code=>{clearTimeout(timeout);if(code!==0||!output.includes('DESKTOP_SMOKE_OK'))process.exitCode=1;});
+import {createRequire} from 'node:module';
+const require=createRequire(import.meta.url),root=path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+const rel=process.platform==='darwin'?`dist/desktop/mac${process.arch==='arm64'?'-arm64':''}/ReplyMate.app/Contents/MacOS/ReplyMate`:'dist/desktop/win-unpacked/ReplyMate.exe';
+const child=spawn(path.join(root,rel),['--smoke-test'],{stdio:['ignore','pipe','pipe'],windowsHide:true,env:{...process.env,PATH:process.platform==='win32'?path.join(process.env.SystemRoot||'C:\\Windows','System32'):'/usr/bin:/bin',OPENAI_API_KEY:'',CODEX_API_KEY:'',WHISPER_BIN:'',WHISPER_MODEL:''}});
+let output='',started=false,passed=false;
+child.stdout.on('data',d=>{output+=d;process.stdout.write(d);const match=/DESKTOP_SMOKE_ORIGIN (http:\/\/127\.0\.0\.1:\d+)/.exec(output);if(match&&!started){started=true;(async()=>{try{await require('../desktop/smoke.cjs')(match[1]);passed=true;console.log('DESKTOP_SMOKE_OK '+process.platform+' '+process.arch);}catch(e){console.error(e);process.exitCode=1;}finally{const s=await(await fetch(match[1]+'/api/session')).json();await fetch(match[1]+'/api/quit',{method:'POST',headers:{Origin:match[1],'X-Session-Token':s.token}});}})().catch(e=>{console.error(e);child.kill();process.exitCode=1;});}});child.stderr.on('data',d=>process.stderr.write(d));
+const timeout=setTimeout(()=>{child.kill();process.exitCode=1;},120000);child.on('error',e=>{clearTimeout(timeout);console.error(e);process.exitCode=1;});child.on('exit',code=>{clearTimeout(timeout);if(code!==0||!passed)process.exitCode=1;});

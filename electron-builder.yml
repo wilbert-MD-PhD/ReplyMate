@@ -5,31 +5,11 @@ asar: true
 directories:
   output: dist/desktop
   buildResources: desktop
+  app: build/core
 files:
-  - desktop/main.cjs
-  - desktop/smoke.cjs
-  - desktop/icon.png
-  - public/**
-  - config.mjs
-  - library.mjs
-  - workspace.mjs
-  - auth-url.mjs
-  - server.mjs
-  - bridge.mjs
-  - demo.mjs
-  - core.mjs
-  - asr.mjs
-  - examples/**
-  - package.json
-  - LICENSE
-  - THIRD_PARTY_NOTICES.md
-extraResources:
-  - from: build/codex
-    to: codex
-  - from: build/codex-version.txt
-    to: codex-version.txt
-  - from: desktop/CODEX-LICENSE
-    to: CODEX-LICENSE
+  - '**/*'
+  - '!desktop/smoke.cjs'
+  - '!node_modules/**'
 mac:
   category: public.app-category.productivity
   icon: desktop/icon.icns
@@ -38,7 +18,7 @@ mac:
     - dmg
   artifactName: ReplyMate-${version}-macOS-${arch}.${ext}
   extendInfo:
-    NSMicrophoneUsageDescription: 答伴通过浏览器录音，将英文提问转换为文字。
+    NSMicrophoneUsageDescription: 答伴通过浏览器录音，将提问转换为原语言文字。
 win:
   icon: desktop/icon.ico
   target:

@@ -34,13 +34,13 @@ export class CaptureSession {
 }
 // One owner for recognizer lifecycle. Old callbacks cannot mutate the next question.
 export class BrowserTranscriber {
- constructor({factory,onText=()=>{},onState=()=>{},now=()=>performance.now(),schedule=(fn,ms)=>setTimeout(fn,ms),unschedule=id=>clearTimeout(id)}={}){Object.assign(this,{factory,onText,onState,now,schedule,unschedule});this.enabled=false;this.rec=null;this.timer=null;this.prefix='';this.current='';this.startedAt=0;this.lastEvent=0;this.epoch=0;this.failures=0;}
+ constructor({locale='en-US',factory,onText=()=>{},onState=()=>{},now=()=>performance.now(),schedule=(fn,ms)=>setTimeout(fn,ms),unschedule=id=>clearTimeout(id)}={}){Object.assign(this,{locale,factory,onText,onState,now,schedule,unschedule});this.enabled=false;this.rec=null;this.timer=null;this.prefix='';this.current='';this.startedAt=0;this.lastEvent=0;this.epoch=0;this.failures=0;}
  start(){this.enabled=true;this.launch();}
  launch(){
   if(!this.enabled||this.rec)return;this.unschedule(this.timer);let rec;try{rec=this.factory();}catch(e){this.onState('unavailable',e.message);return;}
   if(!rec){this.onState('unavailable','浏览器不提供语音识别');return;}
   const epoch=this.epoch;this.rec=rec;this.connected=false;this.startedAt=this.lastEvent=this.now();this.onState('connecting');
-  rec.lang='en-US';rec.continuous=true;rec.interimResults=true;rec.maxAlternatives=3;
+  rec.lang=this.locale;rec.continuous=true;rec.interimResults=true;rec.maxAlternatives=3;
   const live=()=>this.enabled&&this.rec===rec&&epoch===this.epoch;
   rec.onstart=()=>{if(live()){this.connected=true;this.failures=0;this.onState('listening');}};
   rec.onresult=e=>{if(!live())return;this.lastEvent=this.now();let text='',confidence=[];for(let i=0;i<e.results.length;i++){text+=' '+e.results[i][0].transcript;const v=e.results[i][0].confidence;if(v>0)confidence.push(v);}this.current=[this.prefix,text.trim()].filter(Boolean).join(' ');this.onText(this.current,{final:!!e.results[e.results.length-1]?.isFinal,confidence:confidence.length?Math.min(...confidence):null});};

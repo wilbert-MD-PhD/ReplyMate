@@ -1,7 +1,7 @@
 {
   "name": "replymate",
-  "version": "2.4.0",
-  "description": "ReplyMate（答伴）｜会议问答助手 · 面试答题神器。Paired answers, prepared responses and optional speech capture.",
+  "version": "2.5.0",
+  "description": "ReplyMate（答伴）｜会议问答助手 · 面试答题神器。Fast model races, independent deep answers and optional speech capture.",
   "type": "module",
   "private": true,
   "license": "MIT",
@@ -15,8 +15,11 @@
     "check": "node scripts/check-release.mjs",
     "package": "node scripts/package-release.mjs",
     "desktop": "electron .",
-    "desktop:prepare": "node scripts/prepare-desktop.mjs",
-    "desktop:build": "npm run desktop:prepare && electron-builder --publish never"
+    "desktop:prepare": "node scripts/build-components.mjs && node scripts/prepare-desktop.mjs",
+    "desktop:build": "npm run desktop:prepare && electron-builder --publish never",
+    "components:build": "node scripts/build-components.mjs",
+    "whisper:build": "node scripts/build-whisper.mjs",
+    "desktop:audit": "node scripts/audit-desktop.mjs"
   },
   "repository": {
     "type": "git",
@@ -31,12 +34,11 @@
   ],
   "main": "desktop/main.cjs",
   "author": "wilbert",
-  "dependencies": {
-    "officeparser": "8.1.1"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@openai/codex": "0.161.0",
     "electron": "44.7.0",
-    "electron-builder": "26.15.3"
+    "electron-builder": "26.15.3",
+    "fflate": "0.8.2"
   }
 }

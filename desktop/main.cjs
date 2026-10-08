@@ -31,9 +31,6 @@ else {
   app.on('will-quit', () => { tray?.destroy(); });
   app.whenReady().then(() => {
     const root = path.join(__dirname, '..');
-    const runtime = app.isPackaged ? path.join(process.resourcesPath,'codex') : path.join(root,'build','codex');
-    const bin = path.join(runtime,'bin',process.platform === 'win32' ? 'codex.exe' : 'codex');
-    if (!fs.existsSync(bin)) throw Error('安装包缺少 AI 组件，请重新下载完整安装包。');
     const dataDir = path.join(app.getPath('userData'),'data');
     const codexHome = path.join(app.getPath('userData'),'account');
     fs.mkdirSync(codexHome,{recursive:true,mode:0o700});
@@ -46,7 +43,7 @@ else {
     }
     child = utilityProcess.fork(path.join(root,'server.mjs'),[],{
       cwd:app.getPath('userData'),stdio:'pipe',serviceName:'ReplyMate',
-      env:{...process.env,PORT:'0',QA_BACKEND:'auto',QA_FAST_MODEL:'',QA_SECONDARY_MODEL:'',QA_FAST_EFFORT:'',QA_SECONDARY_EFFORT:'',CODEX_BIN:bin,REPLYMATE_DATA_DIR:dataDir,REPLYMATE_CODEX_HOME:codexHome,REPLYMATE_DESKTOP:'1',WHISPER_BIN:'',WHISPER_MODEL:''}
+      env:{...process.env,PORT:'0',QA_BACKEND:'auto',QA_FAST_MODEL:'',QA_SECONDARY_MODEL:'',QA_FAST_EFFORT:'',QA_SECONDARY_EFFORT:'',CODEX_BIN:'',REPLYMATE_USER_DATA:app.getPath('userData'),REPLYMATE_DATA_DIR:dataDir,REPLYMATE_CODEX_HOME:codexHome,REPLYMATE_DESKTOP:'1'}
     });
     child.stdout.on('data',()=>{}); child.stderr.on('data',()=>{});
     child.on('exit',code=>{
@@ -60,12 +57,7 @@ else {
       if(message?.type!=='ready')return;
       if(!/^http:\/\/127\.0\.0\.1:\d+$/.test(message.origin))return;
       origin=message.origin;clearTimeout(timer);
-      if(smoke){
-        try{
-          await require('./smoke.cjs')(origin);
-          console.log('DESKTOP_SMOKE_OK '+process.platform+' '+process.arch);
-        }catch(e){console.error(e.message);process.exitCode=1;}finally{stop();}
-      } else openApp();
+      if(smoke){console.log('DESKTOP_SMOKE_ORIGIN '+origin);} else openApp();
     });
   }).catch(error=>{if(smoke)console.error(error.message);else dialog.showErrorBox('答伴未能启动',error.message);process.exitCode=1;stop();});
 }
