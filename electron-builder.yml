@@ -7,6 +7,7 @@ directories:
   buildResources: desktop
 files:
   - desktop/main.cjs
+  - desktop/smoke.cjs
   - desktop/icon.png
   - public/**
   - config.mjs

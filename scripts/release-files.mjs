@@ -4,7 +4,7 @@ export const releaseFiles=[
  'LICENSE','README.md','README.en.md','CHANGELOG.md','SECURITY.md','THIRD_PARTY_NOTICES.md',
  'package.json','package-lock.json','start.command','start.sh','start.bat',
  '.github/workflows/desktop.yml','scripts/smoke-desktop.mjs',
- 'workspace.mjs','auth-url.mjs','electron-builder.yml','desktop/main.cjs','desktop/icon.png','desktop/icon.ico','desktop/icon.icns','desktop/CODEX-LICENSE','scripts/prepare-desktop.mjs','test/auth.test.mjs','test/workspace.test.mjs',
+ 'workspace.mjs','auth-url.mjs','electron-builder.yml','desktop/main.cjs','desktop/smoke.cjs','desktop/icon.png','desktop/icon.ico','desktop/icon.icns','desktop/CODEX-LICENSE','scripts/prepare-desktop.mjs','test/auth.test.mjs','test/workspace.test.mjs',
  'config.mjs','library.mjs','server.mjs','bridge.mjs','demo.mjs','core.mjs','asr.mjs',
  'examples/reference.json','examples/notes.md','docs/library-format.md','docs/validation.md','docs/development.md','docs/release-v2.4.0.md',
  'public/index.html','public/app.js','public/style.css','public/pcm-worklet.js','public/logic.mjs',

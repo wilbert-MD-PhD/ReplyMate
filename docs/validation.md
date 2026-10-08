@@ -4,7 +4,7 @@
 
 Local verification on 2026-10-08 passed 62 automated tests, including account lifecycle and login URL validation, local DOCX/PPTX/PDF extraction, backup preservation, authenticated imports and immediate reference replacement. Browser checks covered the new first-run page, file-picker import and automatic reload, paired demo answers, and opening/cancelling the official login flow in an isolated account directory. No maintainer credentials are included in builds.
 
-The desktop workflow builds macOS arm64, macOS x64 and Windows x64 separately. Each packaged executable must pass a clean-account startup check before its installer is uploaded: the bundled runtime starts the server on an available loopback port, the bundled Codex initializes without a login, and the page and demo load. The check excludes developer runtimes from PATH. These checks do not complete a user's account authorization or measure real microphone recognition.
+The desktop workflow builds macOS arm64, macOS x64 and Windows x64 separately. Each packaged executable must pass a clean-account startup check before its installer is uploaded: the bundled runtime starts the server on an available loopback port, the bundled Codex initializes without a login, the page loads, Word and PDF imports succeed, and the demo answers from the imported text. The check excludes developer runtimes from PATH. These checks do not complete a user's account authorization or measure real microphone recognition.
 
 Installers are currently unsigned and are not Apple-notarized. Cross-platform build and smoke-test results are recorded in GitHub Actions. A successful build is not a claim of universal OS, browser, account or microphone compatibility.
 

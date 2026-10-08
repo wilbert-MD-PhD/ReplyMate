@@ -56,10 +56,7 @@ else {
       origin=message.origin;clearTimeout(timer);
       if(smoke){
         try{
-          const s=await (await fetch(origin+'/api/status')).json();
-          if(s.version!=='2.4.0'||!s.desktop||s.backend!=='demo'||s.auth.signedIn||s.auth.error)throw Error('Clean first-run state did not pass');
-          const html=await (await fetch(origin)).text();
-          if(!html.includes('会议问答助手')||!html.includes('选择资料'))throw Error('Desktop UI did not load');
+          await require('./smoke.cjs')(origin);
           console.log('DESKTOP_SMOKE_OK '+process.platform+' '+process.arch);
         }catch(e){console.error(e.message);process.exitCode=1;}finally{stop();}
       } else openApp();
