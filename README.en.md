@@ -2,9 +2,13 @@
 
 **会议问答神器 · 面试答题神器** — your companion for meeting Q&A and interview practice.
 
-A general-purpose open-source edition based on v2.3: paired English answers,
-Chinese question translations, prepared responses, live speech capture, and answer history.
-The interface is in Chinese and currently targets English presentation Q&A.
+ReplyMate is an open-source assistant for English presentation Q&A, interview preparation,
+and practice. Import your own reference material to generate two spoken-style English answers
+and see a Chinese translation of each question.
+
+The app runs in your local browser with a Chinese interface. It supports typed questions,
+speech capture, prepared responses, answer history, and editing and retrying questions.
+The two answers have independent queues and stream as they are generated, so you can compare them.
 
 [中文说明](README.md) · [Download](https://github.com/wilbert-MD-PhD/ReplyMate/releases/latest)
 
@@ -45,7 +49,8 @@ Manual input works without a microphone. Browser speech recognition depends on b
 and may send audio to the browser vendor. The demo answer backend alone is offline.
 Optional local recognition requires your own [whisper.cpp](https://github.com/ggml-org/whisper.cpp)
 server and model, configured through `WHISPER_BIN` and `WHISPER_MODEL`.
-No model binaries, private source material, credentials, recordings, or previous account benchmarks are bundled.
+Local speech models and binaries are installed separately. Imported reference material is stored in
+`user-data/` on your computer, where you can back it up or delete it.
 
 The web server binds only to loopback. Questions/audio stay in page memory and disappear on refresh.
 In Codex mode, questions, recent questions, ASR alternatives and reference excerpts/context go to your configured model service.

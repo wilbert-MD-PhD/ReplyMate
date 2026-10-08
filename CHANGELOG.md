@@ -5,15 +5,15 @@
 - Renames the project to **ReplyMate（答伴）**.
 - Uses **会议问答神器 · 面试答题神器** as the Chinese project tagline.
 - Updates the application page, repository links, package metadata and release filenames.
-- Preserves the v2.3 interaction and existing data/privacy boundaries.
+- Keeps paired answers, prepared responses, continuous speech capture, answer history and retries.
 
 ## 2.3.0 — 2026-10-08
 
-First public general-purpose edition, derived from the v2.3 interaction design.
+First public release.
 
-- Preserves independent paired answers, Chinese question translation, answer history, retries and continuous capture.
-- Replaces project-specific data with fictional examples and adds validated Markdown/text/JSON imports.
+- Supports independent paired answers, Chinese question translation, answer history, retries and continuous capture.
+- Includes fictional example data and validated Markdown/text/JSON imports for users' own reference material.
 - Discovers models from the user's Codex catalog with configurable model IDs and supported reasoning effort.
-- Makes local speech recognition optional and removes platform-specific executable/model paths.
+- Supports optional local speech recognition with configurable executable and model paths.
 - Adds offline demo mode, portable launchers, session recovery, input limits and explicit release packaging.
-- Publishes a fresh source history without original private material, recordings, credentials or account benchmarks.
+- Uses an explicit release file list that excludes local user data, credentials, logs and recordings.

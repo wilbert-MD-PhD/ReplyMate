@@ -2,9 +2,11 @@
 
 **会议问答神器 · 面试答题神器**
 
-用自己的资料，准备可直接口述的英文回答。适用于会议汇报问答、面试准备与模拟练习。
-基于 v2.3 整理的通用开源版。
-界面为中文，问题提供中文翻译，两个英文回答独立排队和流式显示。
+ReplyMate（答伴）是一款开源的英文问答辅助工具，适用于会议汇报、面试准备与模拟练习。
+导入自己的资料后，可生成两版便于口述的英文回答，并查看问题的中文翻译。
+
+工具在本机浏览器中使用，采用中文界面，支持文字输入、语音收音、预设快答、历史回看和修改重答。
+两个英文回答独立排队并逐步显示，方便比较和选择。
 
 [English](README.en.md) · [下载最新版](https://github.com/wilbert-MD-PhD/ReplyMate/releases/latest) · [资料格式](docs/library-format.md) · [验证范围](docs/validation.md)
 
@@ -13,7 +15,7 @@
 需要 **Node.js 22 或更新版本**，从 [Node.js 官网](https://nodejs.org/) 安装。
 应用没有第三方 npm 运行依赖，不需要构建前端，也不需要 Python。
 
-1. 在 Releases 下载 `replymate-v2.3.1.zip` 并解压。
+1. 在 [Releases](https://github.com/wilbert-MD-PhD/ReplyMate/releases/latest) 下载最新版 ZIP 压缩包并解压。
 2. 在解压后的目录运行 `npm start`。也可双击 macOS 的 `start.command` 或 Windows 的 `start.bat`，Linux 执行 `sh start.sh`。
 3. 打开 **http://127.0.0.1:8780**，点击页面下方的 `Project purpose` 示例问题。
 
@@ -94,9 +96,9 @@ WHISPER_MODEL=models/your-whisper-model.bin
 Whisper 的命令行参数可能随版本变化，请使用支持 `--request-path`、`--public` 和 `/inference` 的服务版本。
 真实口音、设备、浏览器和本地模型的识别效果需在自己的设备上验证。
 
-## 隐私与发布边界
+## 资料存储与隐私
 
-- 原版的私人资料、专属问答、录音、历史版本、账户凭据及个人路径均未随开源版发布。
+- 导入的资料保存在本机 `user-data/` 目录，可自行备份或删除。
 - 服务只监听 `127.0.0.1`，仅提供明确列出的前端文件。修改请求需要同源会话令牌。
 - 本工具不保存问答日志或上传录音。原音留在浏览器内存，本地转写时发往本机 Whisper 服务。
 - 浏览器语音识别可能发送音频到浏览器供应商。**“离线演示”指答题后端，使用浏览器收音不保证离线。**

@@ -1,6 +1,6 @@
 # Validation scope
 
-The public release is tested using fictional example data. The v2.3.1 update changes branding to ReplyMate（答伴）; the previous v2.3.0 live-model and interaction checks below describe the functional baseline. Local verification on 2026-10-08 passed 54 automated tests. Real Codex requests completed both English answer lanes and the Chinese translation for an unprepared question. Browser checks verified prepared answers, a second manual question, editing/retrying, and selecting the retained original answer version.
+The checks below were recorded on 2026-10-08 for the 2.3.0 public release, using fictional example data. Local verification passed 54 automated tests. Real Codex requests completed both English answer lanes and the Chinese translation for an unprepared question. Browser checks verified prepared answers, a second manual question, editing/retrying, and selecting the retained original answer version. The 2.3.1 release updates the project name, links and package filenames.
 
 - Automated tests cover capture continuity, question queues, history, retry isolation, paired lanes,
   model race cancellation, exact prepared matching, imports, effort selection, SSE decoding,
