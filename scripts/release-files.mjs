@@ -8,10 +8,10 @@ export const releaseFiles=[
  'src/config.mjs','src/model-policy.mjs','src/library.mjs','src/server.mjs','src/bridge.mjs','src/demo.mjs','src/core.mjs','src/asr.mjs',
  'examples/reference.json','examples/notes.md','docs/library-format.md','docs/validation.md','docs/development.md','docs/release-v2.4.0.md',
  'public/index.html','public/app.js','public/style.css','public/pcm-worklet.js','public/logic.mjs',
- 'public/capture.mjs','public/speech-pipeline.mjs','public/answer-lanes.mjs','public/prepared.mjs','public/session-fetch.mjs',
+ 'public/capture.mjs','public/speech-pipeline.mjs','public/answer-lanes.mjs','public/prepared.mjs','public/session-fetch.mjs','public/library-sync.mjs',
  'scripts/import-library.mjs','scripts/release-files.mjs','scripts/check-release.mjs','scripts/package-release.mjs',
  'test/audio-worklet.test.mjs','test/capture.test.mjs','test/meeting.test.mjs','test/dual-answer.test.mjs',
- 'test/race.test.mjs','test/model-policy.test.mjs','test/library.test.mjs','test/server.test.mjs','test/session-fetch.test.mjs'
+ 'test/race.test.mjs','test/model-policy.test.mjs','test/library.test.mjs','test/server.test.mjs','test/session-fetch.test.mjs','test/library-sync.test.mjs'
 ,
  'components/manager.mjs',
  'components/catalog.mjs',

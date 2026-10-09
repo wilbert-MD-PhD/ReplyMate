@@ -4,7 +4,8 @@ import {isLoginURL} from './auth-url.mjs';
 import {sessionFetch,setSessionToken} from './session-fetch.mjs';
 import {QuestionStore,normalize,hasQuestionContent} from './logic.mjs';
 import {CaptureSession,BrowserTranscriber} from './capture.mjs';
-import {createPreparedIndex,findPrepared,normalizePreparedQuestion} from './prepared.mjs';
+import {findPrepared,normalizePreparedQuestion} from './prepared.mjs';
+import {LibrarySync} from './library-sync.mjs';
 import {AnswerLanes} from './answer-lanes.mjs';
 import {resolveSpeech} from './speech-pipeline.mjs';
 const $=id=>document.getElementById(id),store=new QuestionStore(),lanes=new AnswerLanes();
@@ -12,19 +13,20 @@ const $=id=>document.getElementById(id),store=new QuestionStore(),lanes=new Answ
 const client=crypto.randomUUID(),statusURL='/api/status?client='+encodeURIComponent(client);
 let backendMode='demo',speechSettings={language:'en',speechMode:'fast'},aiInstalled=false,pendingImport=null,failedSegment=null;const asrControllers=new Set();
 
-let token='',configured=false,faq=[],faqIndex=new Map(),terms=[],warming=Promise.resolve(),activeController=null,pumping=false;
+let token='',configured=false,warming=Promise.resolve(),activeController=null,pumping=false;
 let listening=false,stream=null,context=null,node=null,transcribing=0,lastSubmitted='',lastSubmitTime=0,processing=Promise.resolve(),recognizer=null,recognizerState='stopped',lastAudioPacket=null,audioReceivedMs=0,pendingSegment=null;
 let authTimer=null;
 let versionId=null,renderedKey='',audioURL=null;
 const sec=n=>Number.isFinite(n)?(n/1000).toFixed(2)+' s':'—';
 const notice=t=>{$('notice').textContent=t;$('notice').hidden=!t;};
+const library=new LibrarySync({load:async()=>{const r=await fetch('/api/library');if(!r.ok)throw Error('资料同步失败，请稍后重试');return r.json();},onChange:renderLibrary});
 const center=componentCenter({post,notice,canSwitch:()=>!listening&&!transcribing,onChanged:async snapshot=>{await init();if(pendingImport&&snapshot?.entries.some(e=>e.id===pendingImport.component&&e.state==='installed')){const {files,mode}=pendingImport;pendingImport=null;await importFiles(files,true,mode);}}});
 async function post(url,data,signal){return sessionFetch(url,{method:'POST',headers:{'Content-Type':'application/json','X-Session-Token':token},body:JSON.stringify({...data,client}),signal});}
 function showWarm(state={}){const labels={waiting:'预热待就绪',warming:'正在自动预热',ready:'预热完成',error:'预热未完成'};$('warmupStatus').textContent=labels[state.state]||'正在检查预热';$('warmupStatus').dataset.state=state.state||'waiting';$('warmupDetail').textContent=(state.message||'')+(state.total?' · '+state.completed+'/'+state.total+' 个通道':'')+(state.errors?.length?' · '+state.errors.join('；'):'');$('warmupProgress').max=state.total||1;$('warmupProgress').value=state.completed||0;$('retryWarm').disabled=state.state==='warming'||backendMode==='demo';$('warm').disabled=$('retryWarm').disabled;}
 async function warm(){try{showWarm({state:'warming',message:'正在预热所选模型'});const r=await post('/api/warm',{model:$('model').value,secondaryModel:$('deepModel').value});const d=await r.json();showWarm(d);if(!r.ok)throw Error(d.error||d.message);$('backendStatus').textContent=d.model+' · '+d.effort+' · '+d.tier;}catch(e){notice('预热未完成：'+e.message);showWarm({state:'error',message:e.message});}}
 
 async function consume(r,fn){if(!r.ok)throw Error((await r.json()).error);let buffer='';const decoder=new TextDecoder();for await(const chunk of r.body){buffer+=decoder.decode(chunk,{stream:true});let i;while((i=buffer.indexOf('\n\n'))>=0){const block=buffer.slice(0,i);buffer=buffer.slice(i+2);const event=block.split('\n').find(x=>x.startsWith('event:'))?.slice(6).trim(),data=block.split('\n').find(x=>x.startsWith('data:'))?.slice(5);if(data)fn(event,JSON.parse(data));}}}
-function prepared(question){return $('cache').checked?findPrepared(faqIndex,question):null;}
+function prepared(question){return $('cache').checked&&library.snapshot?findPrepared(library.snapshot.index,question):null;}
 function submit(question,meta={}){
  question=question.trim();if(!question)return;
  // Limit ASR duplicate suppression to nearby utterances; allow a repeated question later.
@@ -32,16 +34,16 @@ function submit(question,meta={}){
  lastSubmitted=normalize(question);lastSubmitTime=performance.now();const q=store.add(question,{...meta,submittedAt:performance.now()});q.attempts[0].model=$('model').value;q.attempts[0].deepModel=$('deepModel').value;if(meta.manual){store.selected=q.id;store.follow=true;store.holdUntil=0;versionId=null;}render();pump();return q;
 }
 const attemptKey=(q,a)=>q.id+':'+a.id;
-const previousQuestions=q=>store.items.slice(0,store.items.indexOf(q)).slice(-2).map(x=>x.attempts.at(-1).question);
+const previousQuestions=(q,referenceVersion)=>store.items.slice(0,store.items.indexOf(q)).filter(x=>x.attempts.at(-1).referenceVersion===referenceVersion).slice(-2).map(x=>x.attempts.at(-1).question);
 function startCompanions(q,a){
  a.secondary={text:'',state:'queued',model:a.deepModel};
- const key=attemptKey(q,a),context=previousQuestions(q);
+ const key=attemptKey(q,a),context=previousQuestions(q,a.referenceVersion);
  function launch(lane,target,url,data){
   lanes.enqueue(lane,key,async signal=>{
    target.state='running';const start=performance.now();let done=false;render();
    if(!configured)throw Error('连接未就绪，请点击顶部的登录按钮重新连接');
    if(lane==='secondary'&&!target.model)throw Error('请在模型设置中选择深度回答模型');
-   const r=await post(url,{question:a.question,previousQuestions:context,...data},signal);
+   const r=await post(url,{question:a.question,previousQuestions:context,referenceVersion:a.referenceVersion,...data},signal);
    await consume(r,(event,d)=>{
     if(event==='error')throw Error(d.error);
     if(event==='sources')target.sources=d.sources;
@@ -52,24 +54,28 @@ function startCompanions(q,a){
   }).catch(e=>{target.state=e.name==='AbortError'?'stopped':'error';target.error=e.message;}).finally(render);
  }
  launch('secondary',a.secondary,'/api/answer',{model:a.secondary.model,lane:'secondary',verify:true,manual:!!q.meta.manual||!!a.corrected,alternatives:a.corrected?[]:q.meta.alternatives||[]});
- const prior=q.attempts.slice(0,-1).findLast(old=>old.question===a.question&&old.translation?.state==='done');
- const known=findPrepared(faqIndex,a.question);
+ const prior=q.attempts.slice(0,-1).findLast(old=>old.question===a.question&&old.referenceVersion===a.referenceVersion&&old.translation?.state==='done');
+ const known=library.snapshot?findPrepared(library.snapshot.index,a.question):null;
  if(known?.questionZh&&normalizePreparedQuestion(a.question)===normalizePreparedQuestion(known.question))a.translation={text:known.questionZh,state:'done',kind:'prepared'};
  else if((q.meta.language||speechSettings.language)==='zh')a.translation={text:a.question,state:'done',kind:'original'};
  else if(prior)a.translation={...prior.translation};
  else{a.translation={text:'',state:'queued'};launch('translation',a.translation,'/api/translate',{});}
 }
 async function pump(){if(pumping)return;pumping=true;
- try{let job;while((job=store.next())){const {q,a}=job;const ac=new AbortController();activeController=ac;startCompanions(q,a);render();
+ try{let job;while((job=store.next())){const {q,a}=job;const ac=new AbortController();activeController=ac;render();
   try{
+   const snapshot=await library.refresh();
+   if(ac.signal.aborted)throw new DOMException('已停止','AbortError');
+   if(a.onlySecondary&&a.referenceVersion!==snapshot.version)throw Error('资料已更新，请使用“两路重新回答”，避免混用新旧资料');
+   a.referenceVersion=snapshot.version;startCompanions(q,a);render();
    if(a.onlySecondary){store.finish(q.id,a.id);continue;}
    const hit=a.bypassCache?null:prepared(a.question);
    if(hit){a.text=hit.answer;a.kind='prepared';a.model='预设快答 · '+(hit.referenceVersion||'本地资料');a.sources=hit.sources;store.finish(q.id,a.id);requestAnimationFrame(()=>{a.preparedDisplayMs=performance.now()-q.meta.submittedAt;render();});continue;}
    if(!configured)throw Error('后端未连接，请检查配置后重启');
    if(ac.signal.aborted)throw new DOMException('已停止','AbortError');
    const start=performance.now();let done=false;a.started=start;
-   const prior=previousQuestions(q);
-   const r=await post('/api/answer',{question:a.question,model:a.model||$('model').value,previousQuestions:prior,verify:a.verify,alternatives:a.corrected?[]:q.meta.alternatives||[],manual:!!q.meta.manual||!!a.corrected},ac.signal);
+   const prior=previousQuestions(q,a.referenceVersion);
+   const r=await post('/api/answer',{question:a.question,model:a.model||$('model').value,previousQuestions:prior,referenceVersion:a.referenceVersion,verify:a.verify,alternatives:a.corrected?[]:q.meta.alternatives||[],manual:!!q.meta.manual||!!a.corrected},ac.signal);
    await consume(r,(event,d)=>{
     if(event==='error')throw Error(d.error);
     if(event==='sources')a.sources=d.sources;
@@ -77,12 +83,12 @@ async function pump(){if(pumping)return;pumping=true;
     if(event==='done'){done=true;a.effort=d.effort;a.totalMs=d.totalMs;}
    });
    if(!done)throw Error('连接中断，回答未完成');store.finish(q.id,a.id);
-  }catch(e){store.finish(q.id,a.id,{state:e.name==='AbortError'?'stopped':'error',error:e.message});}
+  }catch(e){const state=e.name==='AbortError'?'stopped':'error';if(!a.secondary)a.secondary={state,text:'',error:e.message};if(!a.translation)a.translation={state,text:'',error:e.message};store.finish(q.id,a.id,{state,error:e.message});}
   finally{activeController=null;render();}
  }}finally{pumping=false;render();}
 }
 function selected(){return store.items.find(q=>q.id===store.selected);}
-function retry(onlySecondary=false,correctedText=null){const q=selected();if(!q)return;const old=q.attempts.find(a=>a.id===versionId)||q.attempts.at(-1);const a=store.enqueue(q.id,correctedText||old.question,{bypassCache:true,submittedAt:performance.now(),corrected:correctedText!==null||old.corrected,model:$('model').value,deepModel:$('deepModel').value,onlySecondary});if(onlySecondary)Object.assign(a,{text:old.text,model:old.model,effort:old.effort,firstMs:old.firstMs,e2e:old.e2e,sources:old.sources,kind:old.kind,error:old.error});versionId=a.id;store.select(q.id);store.holdUntil=0;render();pump();}
+function retry(onlySecondary=false,correctedText=null){const q=selected();if(!q)return;const old=q.attempts.find(a=>a.id===versionId)||q.attempts.at(-1);const a=store.enqueue(q.id,correctedText||old.question,{bypassCache:true,submittedAt:performance.now(),corrected:correctedText!==null||old.corrected,model:$('model').value,deepModel:$('deepModel').value,onlySecondary});if(onlySecondary)Object.assign(a,{text:old.text,model:old.model,effort:old.effort,firstMs:old.firstMs,e2e:old.e2e,sources:old.sources,kind:old.kind,error:old.error,referenceVersion:old.referenceVersion});versionId=a.id;store.select(q.id);store.holdUntil=0;render();pump();}
 
 function render(){
  store.tick(performance.now(),Number($('hold').value)*1000);
@@ -95,7 +101,7 @@ function render(){
   $('answeredQuestion').lang=(q.meta.language||speechSettings.language)==='auto'?'':(q.meta.language||speechSettings.language);
   $('goalResult').textContent=a.kind==='prepared'?'预设不计时':backendMode==='demo'?'演示不计时':Number.isFinite(a.goalMs)?sec(a.goalMs)+(a.goalMs<=3000?' · 达标':' · 超时'):a.state==='running'?'计时中':'—';$('goalResult').className=a.goalMs<=3000?'fast':'slow';
   $('questionNumber').textContent='#'+(idx+1);$('answeredQuestion').textContent=a.question;$('answerText').textContent=a.text||(a.state==='queued'?'Waiting in queue…':a.state==='error'?a.error:a.state==='stopped'?'Stopped.':'Preparing answer…');
-  $('sourceTag').textContent='快速回答 · 深度回答';$('fastSource').textContent=(a.model==='race'?'多模型竞速中':a.model||'等待')+(a.effort?' · '+a.effort:'');$('answerStatus').textContent=({queued:'Queued',running:'Streaming',done:a.kind==='prepared'?'Prepared':a.kind==='clarification'?'Clarify':'Done',error:'Error',stopped:'Stopped'})[a.state];
+  $('sourceTag').textContent=a.referenceVersion&&library.snapshot&&a.referenceVersion!==library.snapshot.version?'历史回答 · 资料已更新':'快速回答 · 深度回答';$('fastSource').textContent=(a.model==='race'?'多模型竞速中':a.model||'等待')+(a.effort?' · '+a.effort:'');$('answerStatus').textContent=({queued:'Queued',running:'Streaming',done:a.kind==='prepared'?'Prepared':a.kind==='clarification'?'Clarify':'Done',error:'Error',stopped:'Stopped'})[a.state];
   $('e2eLabel').textContent=q.meta.manual?'手动提交 → 首字':'语音结束 → 生成首字¹';
   $('ttftLabel').textContent=a.kind==='prepared'?'预设显示（提交后）':'请求 → 首字';
   $('ttft').textContent=a.kind==='prepared'?(Number.isFinite(a.preparedDisplayMs)?Math.round(a.preparedDisplayMs)+' ms':'即时'):a.kind?'不计时':sec(a.firstMs);$('e2e').textContent=a.kind?'—':sec(a.e2e);$('ttft').className=a.kind==='prepared'||a.firstMs<=3000?'fast':'slow';$('e2e').className=a.e2e<=3000?'fast':'slow';
@@ -115,7 +121,14 @@ function render(){
  const signature=store.items.map(q=>q.id+q.attempts.at(-1).state+q.attempts.at(-1).secondary?.state).join('|')+'|'+store.selected;
  if($('history').dataset.signature!==signature){$('history').dataset.signature=signature;$('history').replaceChildren(...store.items.map((q,i)=>{const b=document.createElement('button');b.className='questioncard'+(q.id===store.selected?' selected':'');const small=document.createElement('small');small.textContent='#'+(i+1)+' · 快速 '+q.attempts.at(-1).state+' / 深度回答 '+(q.attempts.at(-1).secondary?.state||'queued');b.append(small,document.createTextNode(q.text.slice(0,100)));b.onclick=()=>{store.select(q.id);versionId=null;render();};return b;}));}
 }
-function renderFAQ(){const search=$('faqSearch').value.toLowerCase();$('faqs').replaceChildren(...faq.filter(f=>(f.title+' '+f.question+' '+(f.questionZh||'')+' '+f.answer).toLowerCase().includes(search)).map(f=>{const b=document.createElement('button');b.textContent=f.title;b.onclick=()=>{const q=submit(f.question);if(q){store.select(q.id);versionId=null;render();}};return b;}));}
+function renderLibrary(snapshot){
+ $('sources').replaceChildren();for(const source of snapshot?.sources||[]){const li=document.createElement('li');li.textContent=source.name;$('sources').append(li);}
+ $('faqCount').textContent=snapshot?snapshot.faq.length+' 条预设问答':'预设问答同步中';
+ $('referenceStatus').textContent=snapshot?snapshot.version+' · '+snapshot.faq.length+' 条问答 · '+snapshot.index.size+' 种问法已加载':'资料正在同步，旧预设已停用';
+ if(!importing)$('importState').textContent=!snapshot?'正在同步资料…':snapshot.customLibrary?'已载入：'+snapshot.sources.map(x=>x.name).join('、'):'当前使用虚构示例，可直接点击下方预设问题体验。';
+ renderFAQ();render();
+}
+function renderFAQ(){const search=$('faqSearch').value.toLowerCase();$('faqs').replaceChildren(...(library.snapshot?.faq||[]).filter(f=>(f.title+' '+f.question+' '+(f.questionZh||'')+' '+f.answer).toLowerCase().includes(search)).map(f=>{const b=document.createElement('button');b.textContent=f.title;b.onclick=()=>{const q=submit(f.question);if(q){store.select(q.id);versionId=null;render();}};return b;}));}
 const capture=new CaptureSession({canSubmit:text=>hasQuestionContent(text,speechSettings.language),silence:()=>Number($('silence').value),threshold:()=>Number($('threshold').value),onDraft:text=>{$('question').value=text;$('partial').textContent='正在转写…';},onSegment:segment=>{
  recognizer?.commit();$('question').value='';$('partial').textContent='问题已结束，正在处理…';
  if(transcribing>=speechBudget.maxQueue){failedSegment=segment;$('retrySpeech').hidden=false;notice('转写积压，已暂停收音。当前片段已保留，可稍后重试或选择更小模型。');stopListening();return;}
@@ -165,14 +178,14 @@ function syncStatus(s){
  $('connection').textContent=configured?(s.backend==='demo'?'离线演示 · 无 AI 生成':'Codex 已连接'):'连接失败';
  $('backendStatus').textContent=s.error||s.mode;showAccount(s.auth);showWarm(s.warmup);showASR(s.asr);
 }
-async function init(){try{const s=await(await fetch(statusURL)).json();syncStatus(s);terms=s.terms||[];
+async function init(){try{const s=await(await fetch(statusURL)).json();syncStatus(s);
  speechSettings=s.settings||speechSettings;$('speechMode').value=speechSettings.speechMode||'fast';$('question').lang=speechSettings.language==='auto'?'':speechSettings.language;$('questionsOnly').disabled=speechSettings.language!=='en';
  $('model').replaceChildren(...s.models.map(m=>new Option('单模型 · '+m.id+' · '+m.effort,m.id)));if(s.raceModels.length>1)$('model').add(new Option('多模型竞速 · 首个返回者回答','race'),0);$('model').value=s.fastSelection;
  $('raceDescription').textContent=s.raceModels.length>1?'默认同时请求 '+s.raceModels.join('、')+'，首个非空正文返回后保留胜出者，停止其他竞速请求。':s.backend==='demo'?'离线演示仅用于体验界面。':'当前只有一个快速模型可用，暂不能竞速。';
  $('deepModel').replaceChildren(...s.models.map(m=>new Option(m.id+(m.id==='gpt-6-astra'?' · 最强模型优先':''),m.id)));if(!s.secondaryModel)$('deepModel').add(new Option('请选择深度回答模型',''),0);$('deepModel').value=s.secondaryModel;
  $('deepDescription').textContent=s.backend==='demo'?'登录后默认使用 GPT-6 Astra 独立生成深度回答。':s.secondaryError||'默认使用 GPT-6 Astra 独立生成，优先回答质量。它可能较慢，竞速结束不会取消深度回答，也不阻塞下一题快答。';
  $('benchResults').textContent=s.backend==='demo'?'演示模式仅显示示例或资料摘录，不调用模型，也不自动翻译未知问题。':'模型来自当前账户列表，访问权限以实际请求为准。';
- $('sources').replaceChildren();for(const src of s.reference){const li=document.createElement('li');li.textContent=src.name;$('sources').append(li);}faq=await(await fetch('/api/faq')).json();faqIndex=createPreparedIndex(faq);$('faqCount').textContent=faq.length+' 条预设问答';$('referenceStatus').textContent=(s.referenceVersion||'')+' · '+faq.length+' 条问答 · '+faqIndex.size+' 种问法已加载';renderFAQ();showAccount(s.auth);if(s.auth?.pending)pollLogin();$('quitApp').hidden=!s.desktop;$('importState').textContent=s.customLibrary?'已载入：'+s.reference.map(x=>x.name).join('、'):'当前使用虚构示例，可直接点击下方预设问题体验。';if(s.backend==='demo')notice('演示模式：不调用 AI。登录后即可生成真实回答。');else if(!configured)notice(s.error);else notice(''); // Reconnection refreshes controls without clearing the in-memory question store.
+ await library.refresh(s.referenceVersion);showAccount(s.auth);if(s.auth?.pending)pollLogin();$('quitApp').hidden=!s.desktop;if(s.backend==='demo')notice('演示模式：不调用 AI。登录后即可生成真实回答。');else if(!configured)notice(s.error);else notice(''); // Reconnection refreshes controls without clearing the in-memory question store.
 
  }catch(e){notice('连接失败：'+e.message);}render();}
 function showAccount(auth={}){
@@ -223,4 +236,4 @@ $('silence').oninput=()=>$('silenceLabel').textContent=$('silence').value+' ms';
 document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){e.preventDefault();$('answer').click();}if(e.key==='Escape')stopListening();if(!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)){if(e.key==='ArrowLeft')$('prev').click();if(e.key==='ArrowRight')$('next').click();}});
 setInterval(()=>{autoCheck();render();},200);window.addEventListener('beforeunload',()=>{for(const ac of asrControllers)ac.abort();stopListening();activeController?.abort();lanes.cancelAll();for(const q of store.items)if(q.meta.audioURL)URL.revokeObjectURL(q.meta.audioURL);});init();
 
-let checkingStatus=false;setInterval(async()=>{if(checkingStatus)return;checkingStatus=true;try{const s=await(await fetch(statusURL)).json();const changed=s.backend!==backendMode;syncStatus(s);if(changed)await init();}catch{}finally{checkingStatus=false;}},1500);
+let checkingStatus=false;setInterval(async()=>{if(checkingStatus)return;checkingStatus=true;try{const s=await(await fetch(statusURL)).json();const changed=s.backend!==backendMode;syncStatus(s);if(changed)await init();else await library.refresh(s.referenceVersion);}catch{}finally{checkingStatus=false;}},1500);

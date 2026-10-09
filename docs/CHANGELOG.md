@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Synchronize library versions, source lists and prepared answers across open pages after imports, preserving question history and marking answers from older libraries.
+- Refresh the library before answering, reject generation against a replaced library, and prevent deep-only retries from mixing new reference material with an old fast answer.
+
 ## 2.5.3 — 2026-10-08
 
 Includes the three fixes below plus serialized atomic writes to the same path on Windows. The v2.5.1 and v2.5.2 tags were retained for audit after the Windows atomic-write check and an outdated hardcoded desktop-version assertion failed, respectively. Neither candidate was published. Desktop smoke tests now read the expected project version.

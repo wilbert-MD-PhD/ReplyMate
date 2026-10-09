@@ -18,7 +18,7 @@ test('clean demo server: paired streams, session auth, private-file isolation an
   for(let i=0;i<100;i++){try{const r=await fetch(origin+'/api/status');status=await r.json();break;}catch{if(child.exitCode!==null)throw Error(output);await delay(50);}}
   assert.ok(status,'server did not start');assert.equal(status.backend,'demo');assert.equal(status.configured,true);assert.equal(status.asr.state,'disabled');
   const post=(route,data,headers={})=>fetch(origin+route,{method:'POST',headers:{Origin:origin,'X-Session-Token':status.token,'Content-Type':'application/json',...headers},body:JSON.stringify(data)});
-  await t.test('client assets and curated demo load',async()=>{const r=await fetch(origin+'/');assert.match(await r.text(),/ReplyMate/);const faq=await(await fetch(origin+'/api/faq')).json();assert.equal(faq.length,3);});
+  await t.test('client assets and curated demo load',async()=>{const r=await fetch(origin+'/');assert.match(await r.text(),/ReplyMate/);const faq=await(await fetch(origin+'/api/faq')).json();assert.equal(faq.length,3);assert.equal((await fetch(origin+'/library-sync.mjs')).status,200);const library=await(await fetch(origin+'/api/library')).json();assert.equal(library.version,status.referenceVersion);assert.deepEqual(library.faq,faq);assert.deepEqual(library.sources,status.reference);});
   await t.test('secret and imported directories are never served',async()=>{for(const route of ['/user-data/reference.json','/.env','/bridge.mjs','/examples/reference.json','/%2e%2e/.env'])assert.equal((await fetch(origin+route)).status,404);});
   await t.test('invalid session and cross-origin requests are rejected',async()=>{assert.equal((await post('/api/answer',{question:'Hello?'},{'X-Session-Token':'stale'})).status,403);assert.equal((await fetch(origin+'/api/session',{headers:{Origin:'https://example.invalid'}})).status,403);});
   await t.test('two answer lanes and translation finish independently',async()=>{
@@ -36,6 +36,9 @@ test('clean demo server: paired streams, session auth, private-file isolation an
    assert.equal((await send('my.md','New reference',{'X-Session-Token':'wrong'})).status,403);
    assert.equal((await send('my.md','# My talk\n\nOur study includes 12 teams.')).status,200);
    const updated=await(await fetch(origin+'/api/status')).json();assert.equal(updated.customLibrary,true);assert.equal(updated.reference[0].name,'my.md');
+   const snapshot=await(await fetch(origin+'/api/library')).json();assert.equal(snapshot.version,updated.referenceVersion);assert.deepEqual(snapshot.faq,[]);assert.deepEqual(snapshot.sources,updated.reference);assert.equal(snapshot.customLibrary,true);
+   for(const [route,lane] of [['/api/answer',undefined],['/api/answer','secondary'],['/api/translate',undefined]]){const stale=await post(route,{question:'What is the purpose of this project?',client:'old-page',lane,referenceVersion:status.referenceVersion});assert.equal(stale.status,409);assert.equal((await stale.json()).code,'REFERENCE_CHANGED');}
+   const fresh=await post('/api/answer',{question:'What is the purpose of this project?',client:'old-page',referenceVersion:snapshot.version});assert.equal(fresh.status,200);assert.match(await fresh.text(),/event: done/);
    assert.deepEqual(await(await fetch(origin+'/api/faq')).json(),[]);
    assert.match(await readFile(path.join(dataDir,'reference.json'),'utf8'),/12 teams/);
    assert.equal((await send('bad.json','{}')).status,400);

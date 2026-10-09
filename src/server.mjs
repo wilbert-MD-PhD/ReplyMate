@@ -66,7 +66,7 @@ const ready=config.backend==='demo'?Promise.resolve():ensureCodex().catch(e=>{if
 void ready.then(()=>autoWarm());
 const json=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify(data));};
 async function bytes(req,max=Infinity){let parts=[],size=0;for await(const c of req){size+=c.length;if(size>max)throw Error('Request too large');parts.push(c);}return Buffer.concat(parts);}
-const publicFiles=new Set(['index.html','app.js','auth-url.mjs','style.css','pcm-worklet.js','logic.mjs','capture.mjs','speech-pipeline.mjs','answer-lanes.mjs','prepared.mjs','session-fetch.mjs','components-ui.mjs','speech-config.mjs']);
+const publicFiles=new Set(['index.html','app.js','auth-url.mjs','style.css','pcm-worklet.js','logic.mjs','capture.mjs','speech-pipeline.mjs','answer-lanes.mjs','prepared.mjs','session-fetch.mjs','library-sync.mjs','components-ui.mjs','speech-config.mjs']);
 const active=new Map();
 
 function asrOptions(value=settings.value){return {bin:components.state.installed['whisper-runtime']?components.entryPath('whisper-runtime'):config.whisperBin,model:components.state.installed[value.model]?components.entryPath(value.model):config.whisperModel,modelId:value.model,version:components.state.installed['whisper-runtime']?.version,language:value.language,threads:value.threads,useGPU:value.useGPU};}
@@ -98,6 +98,7 @@ const server=http.createServer(async(req,res)=>{
   }
   if(req.method==='GET'&&url.pathname==='/api/auth/status'){await ready;await refreshAccount();return json(res,200,{signedIn:!!codex?.account&&!codex?.lastError,pending:!!codex?.login&&!codex?.lastError,error:authError,backend});}
   if(req.method==='GET'&&url.pathname==='/api/components'){if(req.headers['x-session-token']!==token)return json(res,403,{error:'会话已失效，请刷新页面'});return json(res,200,{...await components.snapshot(),settings:settings.value,languages,asr:asr.snapshot()});}
+  if(req.method==='GET'&&url.pathname==='/api/library')return json(res,200,{version:reference.version,sources:reference.sources,faq:reference.faq.filter(f=>f.reviewed),customLibrary:existsSync(localLibrary)});
   if(req.method==='GET'&&url.pathname==='/api/faq')return json(res,200,reference.faq.filter(f=>f.reviewed));
   if(req.method==='POST'){
    if(req.headers.origin!==origin||req.headers['x-session-token']!==token)return json(res,403,{error:'会话已失效，请刷新页面'});
@@ -167,6 +168,7 @@ const server=http.createServer(async(req,res)=>{
    const data=JSON.parse((await bytes(req,64000)).toString()||'{}');
    if(setupBusy)return json(res,409,{error:'正在更新账号或资料，请稍后重试'});
    if(!data||typeof data!=='object'||Array.isArray(data))throw Error('JSON object required');
+   if(data.referenceVersion!==undefined&&data.referenceVersion!==reference.version)return json(res,409,{code:'REFERENCE_CHANGED',error:'资料已更新，请使用“两路重新回答”或重新提问'});
    const translating=url.pathname==='/api/translate',deep=data.lane==='secondary';
    const model=translating?fastModel:data.model||(deep?secondaryModel:fastSelection),session=pageSession(data.client),client=session.client;
    if(deep&&!model)throw Error(secondaryError);
