@@ -18,6 +18,47 @@ test('only exact reviewed questions select prepared answers',()=>{
  for(const q of ['Does it NOT collect personal data?','Does it collect 20 personal records?','Does it collect personal data and what is the budget?','And that?'])assert.equal(findPrepared(index,q),null);
 });
 test('unreviewed answers cannot bypass generation',()=>{const f={...example.faq[0],reviewed:false};assert.equal(createPreparedIndex([f]).size,0);});
+test('prepared answers preserve signs, decimal points, operators and word boundaries',()=>{
+ for(const [original,changed] of [
+  ['Is the temperature -5 C?','Is the temperature 5 C?'],
+  ['Is the temperature +5 C?','Is the temperature -5 C?'],
+  ['Is the threshold 1.5?','Is the threshold 15?'],
+  ['Is p < 0.05?','Is p > 0.05?'],
+  ['Is p <= 0.05?','Is p < 0.05?'],
+  ['Is the rate 5%?','Is the rate 5?'],
+  ['Is the threshold 1e-5?','Is the threshold 1e5?'],
+  ['Do we re-sign?','Do we resign?'],
+  ['Is this AB C?','Is this A BC?']
+ ]){
+  const faq={...example.faq[0],question:original,aliases:[]};
+  const index=createPreparedIndex([faq]);assert.equal(findPrepared(index,original)?.id,faq.id);
+  assert.equal(findPrepared(index,changed),null,changed);
+  const library=structuredClone(example);library.faq=[faq,{...faq,id:'distinct',question:changed}];
+  assert.doesNotThrow(()=>validateLibrary(library));
+ }
+ const faq={...example.faq[0],question:'Is the temperature -5 C?',aliases:[]};
+ assert.equal(findPrepared(createPreparedIndex([faq]),' Okay, so IS THE TEMPERATURE −５ C！ ')?.id,faq.id);
+});
+test('long chunks send evidence around the query, including near their end',()=>{
+ for(const prefix of ['Background information. '.repeat(130),'ﬁ 温度记录。'.repeat(400)]){
+  const text=prefix+'Cobalt calibration coefficient is 17.42.';
+  const chunks=[{id:'calibration',title:'Cobalt calibration coefficient',text}];
+  assert.ok(text.length>2000&&text.length<=6000);
+  const excerpt=selectExcerpts('What is the Cobalt calibration coefficient?',chunks);
+  assert.match(excerpt,/Cobalt calibration coefficient is 17\.42\./);
+  assert.match(excerpt,/^\[calibration\]/);assert.ok(excerpt.length<=4800);
+  assert.equal(chunks[0].text,text);
+ }
+ assert.equal(selectExcerpts('unrelated question',[]),'');
+});
+test('all three selected chunks retain their relevant windows within the shared budget',()=>{
+ const chunks=Array.from({length:3},(_,i)=>({id:'source-'+i,title:'Cobalt calibration coefficient',text:'Background information. '.repeat(180)+`Cobalt calibration coefficient is ${17+i}.42.`}));
+ const excerpt=selectExcerpts('Cobalt calibration coefficient?',chunks);
+ assert.ok(excerpt.length<=4800);
+ for(let i=0;i<3;i++){assert.ok(excerpt.includes(`[source-${i}]`));assert.ok(excerpt.includes(`coefficient is ${17+i}.42.`));}
+ const short={id:'short',title:'Cobalt calibration coefficient',text:'Cobalt calibration coefficient is 2.'};
+ assert.equal(selectExcerpts('Cobalt calibration coefficient',[short]),'[short] Cobalt calibration coefficient\n'+short.text);
+});
 test('invalid source references and conflicting aliases fail closed',()=>{
  const r=structuredClone(example);r.faq[0].sourceIds=['missing'];assert.throws(()=>validateLibrary(r),/unknown FAQ source/);
  const c=structuredClone(example);c.faq[1].aliases=[c.faq[0].question];assert.throws(()=>validateLibrary(c),/冲突/);

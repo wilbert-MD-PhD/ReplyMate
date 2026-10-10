@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Preserve signs, decimal points, comparison operators and word boundaries when matching reviewed prepared answers.
+- Select relevant windows inside long reference chunks and share the excerpt budget across all selected sources.
+- Release page sessions on close, expire abandoned sessions after three minutes, cancel retired-page generation and warm only live pages after imports, settings changes or reconnects.
 - Synchronize library versions, source lists and prepared answers across open pages after imports, preserving question history and marking answers from older libraries.
 - Refresh the library before answering, reject generation against a replaced library, and prevent deep-only retries from mixing new reference material with an old fast answer.
 

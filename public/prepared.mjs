@@ -1,8 +1,10 @@
-// Only reviewed, exact phrasings can bypass live generation. Preserve negation/numbers.
+// Only reviewed, exact phrasings can bypass live generation. Keep semantic punctuation.
 export function normalizePreparedQuestion(text){
  let t=String(text||'').normalize('NFKC').toLocaleLowerCase().trim();
  for(let i=0;i<4;i++)t=t.replace(/^(?:thank you|thanks|okay|ok|so|well|my question is|i would like to ask)[,.:!\s]+/,'');
- return t.replace(/[^\p{L}\p{M}\p{N}]/gu,'');
+ if(!/[\p{L}\p{M}\p{N}]/u.test(t))return '';
+ // Normalize typography and sentence endings, never signs, decimals or operators.
+ return t.replace(/\u2212/g,'-').replace(/[’‘]/g,"'").replace(/[.!?。！？]+$/u,'').replace(/\s+/gu,' ').trim();
 }
 export function createPreparedIndex(entries){
  const index=new Map();

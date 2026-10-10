@@ -116,9 +116,12 @@ export class CodexBridge extends EventEmitter {
       });
     });
   }
-  async prime(model,client,task='answer'){
+  releaseClient(client){for(const key of this.sessions.keys())if(key.startsWith(client+':'))this.sessions.delete(key);}
+  async prime(model,client,task='answer',signal){
+    signal?.throwIfAborted();
     const s=await this.session(model,client,undefined,task);
-    if(!s.primed){s.priming=this.answer({model,client,task,question:task==='translation'?'[WARMUP] Reply only 就绪。':'[WARMUP] Prepare to answer questions using the reference. Reply only Ready.'},()=>{});s.primed=s.priming.catch(e=>{s.primed=null;throw e;}).finally(()=>{s.priming=null;});}
+    signal?.throwIfAborted();
+    if(!s.primed){s.priming=this.answer({model,client,task,question:task==='translation'?'[WARMUP] Reply only 就绪。':'[WARMUP] Prepare to answer questions using the reference. Reply only Ready.'},()=>{},signal);s.primed=s.priming.catch(e=>{s.primed=null;throw e;}).finally(()=>{s.priming=null;});}
     await s.primed;return s;
   }
   close(){this.closed=true;for(const p of this.pending.values()){clearTimeout(p.timer);p.reject(new Error('Codex 已关闭'));}this.pending.clear();this.child?.kill();if(this.cwd)rm(this.cwd,{recursive:true,force:true}).catch(()=>{});}

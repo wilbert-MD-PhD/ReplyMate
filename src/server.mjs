@@ -17,18 +17,22 @@ import {Settings} from '../components/settings.mjs';
 import {resolveRuntime,parserFor,ComponentRequired} from '../components/runtime-resolver.mjs';
 import {selfTest,silenceWav} from '../components/self-test.mjs';
 import {Warmup} from './warmup.mjs';
+import {PageSessions} from './page-sessions.mjs';
 const catalog=await loadCatalog(),settings=new Settings(appDataDir);await settings.load();
-const startupSession={client:randomBytes(16).toString('hex'),warmup:new Warmup()},pageSessions=new Map();
+const active=new Map();
+const pageSessions=new PageSessions({
+ create:()=>({client:randomBytes(16).toString('hex'),warmup:new Warmup(),controller:new AbortController()}),
+ busy:session=>!!session.warmup.pending||['',':secondary',':translation'].some(suffix=>active.has(session.client+suffix)),
+ dispose:session=>{session.warmup.reset('页面会话已释放');session.controller.abort();for(const suffix of ['',':secondary',':translation'])active.get(session.client+suffix)?.abort();codex?.releaseClient(session.client);}
+});
 function pageSession(id,warm=false){
- const key=String(id||'').slice(0,80);if(!key)return startupSession;
- if(!pageSessions.has(key)){
-  // Only the first page claims the startup warm-up. Other pages own separate threads.
-  const session=pageSessions.size?{client:randomBytes(16).toString('hex'),warmup:new Warmup()}:startupSession;
-  pageSessions.set(key,session);if(warm)void ready.then(()=>{if(!setupBusy)return autoWarm(session);});
- }
- return pageSessions.get(key);
+ const key=String(id||'').slice(0,80);
+ if(!key)return pageSessions.peek()||{warmup:new Warmup()};
+ const {session,created}=pageSessions.get(key);
+ if(created&&warm)void ready.then(()=>autoWarm(session));
+ return session;
 }
-function resetWarmups(message,error=false){for(const session of new Set([startupSession,...pageSessions.values()])){session.warmup.reset(message);if(error)session.warmup.state.state='error';}}
+function resetWarmups(message,error=false){for(const session of pageSessions.live()){session.warmup.reset(message);if(error)session.warmup.state.state='error';}}
 const components=await new ComponentManager(appDataDir,catalog,{selfTest,beforeSwitch,afterSwitch}).init();
 let port=config.port,origin;const token=randomBytes(32).toString('hex');
 const localLibrary=path.join(dataDir,'reference.json');
@@ -67,21 +71,21 @@ void ready.then(()=>autoWarm());
 const json=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify(data));};
 async function bytes(req,max=Infinity){let parts=[],size=0;for await(const c of req){size+=c.length;if(size>max)throw Error('Request too large');parts.push(c);}return Buffer.concat(parts);}
 const publicFiles=new Set(['index.html','app.js','auth-url.mjs','style.css','pcm-worklet.js','logic.mjs','capture.mjs','speech-pipeline.mjs','answer-lanes.mjs','prepared.mjs','session-fetch.mjs','library-sync.mjs','components-ui.mjs','speech-config.mjs']);
-const active=new Map();
+const sessionCleanup=setInterval(()=>pageSessions.sweep(),30000);sessionCleanup.unref();
 
 function asrOptions(value=settings.value){return {bin:components.state.installed['whisper-runtime']?components.entryPath('whisper-runtime'):config.whisperBin,model:components.state.installed[value.model]?components.entryPath(value.model):config.whisperModel,modelId:value.model,version:components.state.installed['whisper-runtime']?.version,language:value.language,threads:value.threads,useGPU:value.useGPU};}
 async function configureASR(value=settings.value){await asr.configure(asrOptions(value));if(asr.state==='ready')await asr.transcribe(silenceWav(),'fast',{language:value.language});}
 async function beforeSwitch(id){if(active.size||warming||setupBusy||asr.busy)throw Error('组件已下载，请等当前回答或转写完成后重试安装');if(id==='codex-runtime'){codex?.close();codex=null;selectBridge();}if(id==='whisper-runtime'||id===settings.value.model)await asr.stop();}
 async function afterSwitch(id){if(id==='codex-runtime'){if(components.state.installed[id])await ensureCodex().catch(e=>{authError=e.message;});else selectBridge();resetWarmups();void autoWarm();}if(id==='whisper-runtime'||id===settings.value.model)await configureASR();}
-async function warmModels(session=startupSession,model=fastSelection,deepModel=secondaryModel){
- const {client,warmup}=session;if(startupError)return warmup.state;
+async function warmModels(session,model=fastSelection,deepModel=secondaryModel){
+ const {client,warmup,controller}=session;if(startupError||controller.signal.aborted)return warmup.state;
  const enabled=backend==='codex'&&settings.value.autoWarm,candidates=model==='race'?raceModels:[model];
  if(enabled&&(!candidates.every(m=>bridge.models.some(x=>x.id===m))))throw Error(secondaryError||'所选模型不可用');
- const jobs=[...candidates.map(m=>({label:m,run:()=>bridge.prime(m,client)})),{label:'深度回答',run:()=>deepModel?bridge.prime(deepModel,client+':secondary'):Promise.reject(Error(secondaryError||'未选择深度模型'))},{label:'中文辅助',run:()=>bridge.prime(fastModel,client+':translation','translation')}];
+ const jobs=[...candidates.map(m=>({label:m,run:()=>bridge.prime(m,client,'answer',controller.signal)})),{label:'深度回答',run:()=>deepModel?bridge.prime(deepModel,client+':secondary','answer',controller.signal):Promise.reject(Error(secondaryError||'未选择深度模型'))},{label:'中文辅助',run:()=>bridge.prime(fastModel,client+':translation','translation',controller.signal)}];
  const key=JSON.stringify([client,candidates,deepModel,reference.version,settings.value.language]);
  if(enabled)warming++;try{return await warmup.run(key,jobs,{enabled,message:!settings.value.autoWarm?'自动预热已关闭':config.desktop&&!components.state.installed['codex-runtime']?'等待安装 AI 回答组件，安装并登录后自动预热':'等待登录账号，登录后自动预热'});}finally{if(enabled)warming--;}
 }
-function autoWarm(session){if(setupBusy)return Promise.resolve();return Promise.all((session?[session]:[...new Set([startupSession,...pageSessions.values()])]).map(s=>warmModels(s).catch(e=>{s.warmup.reset(e.message);s.warmup.state.state='error';})));}
+function autoWarm(session){if(setupBusy)return Promise.resolve();const live=pageSessions.live();return Promise.all((session?live.filter(s=>s===session):live).map(s=>warmModels(s).catch(e=>{if(!s.controller.signal.aborted){s.warmup.reset(e.message);s.warmup.state.state='error';}})));}
 
 const server=http.createServer(async(req,res)=>{
  res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','no-referrer');res.setHeader('X-Frame-Options','DENY');
@@ -102,6 +106,11 @@ const server=http.createServer(async(req,res)=>{
   if(req.method==='GET'&&url.pathname==='/api/faq')return json(res,200,reference.faq.filter(f=>f.reviewed));
   if(req.method==='POST'){
    if(req.headers.origin!==origin||req.headers['x-session-token']!==token)return json(res,403,{error:'会话已失效，请刷新页面'});
+   if(url.pathname==='/api/session/close'){
+    const data=JSON.parse((await bytes(req,8192)).toString());
+    if(!data||typeof data.client!=='string'||!data.client)throw Error('页面标识不能为空');
+    pageSessions.release(data.client);return json(res,200,{ok:true});
+   }
    if(url.pathname==='/api/quit'){if(!config.desktop)return json(res,404,{error:'Not found'});process.parentPort?.postMessage({type:'quit'});return json(res,200,{ok:true});}
    if(url.pathname.startsWith('/api/components/')){
     const action=url.pathname.split('/').at(-1);
@@ -170,7 +179,7 @@ const server=http.createServer(async(req,res)=>{
    if(!data||typeof data!=='object'||Array.isArray(data))throw Error('JSON object required');
    if(data.referenceVersion!==undefined&&data.referenceVersion!==reference.version)return json(res,409,{code:'REFERENCE_CHANGED',error:'资料已更新，请使用“两路重新回答”或重新提问'});
    const translating=url.pathname==='/api/translate',deep=data.lane==='secondary';
-   const model=translating?fastModel:data.model||(deep?secondaryModel:fastSelection),session=pageSession(data.client),client=session.client;
+   const model=translating?fastModel:data.model||(deep?secondaryModel:fastSelection),session=pageSession(data.client||'default'),client=session.client;
    if(deep&&!model)throw Error(secondaryError);
    if(deep&&model==='race')throw Error('深度回答须使用独立模型');
    if(model!=='race'&&!bridge.models.some(m=>m.id===model))throw Error('Unknown model');
@@ -201,7 +210,7 @@ const server=http.createServer(async(req,res)=>{
  }catch(e){if(!res.headersSent)json(res,400,{error:e.message,code:e.code,component:e.component});else res.end();}
 });
 server.requestTimeout=600000;server.headersTimeout=15000;
-let closing;function close(){return closing||=(async()=>{for(const controller of active.values())controller.abort();demo.close();codex?.close();components.close();server.close();server.closeAllConnections();await asr.close();})();}
+let closing;function close(){return closing||=(async()=>{clearInterval(sessionCleanup);for(const session of pageSessions.live())session.controller.abort();for(const controller of active.values())controller.abort();demo.close();codex?.close();components.close();server.close();server.closeAllConnections();await asr.close();})();}
 server.on('error',error=>{console.error(error.code==='EADDRINUSE'?'端口已占用，请在 .env 修改 PORT':'服务启动失败：'+error.message);close();process.exitCode=1;});
 server.listen(port,'127.0.0.1',()=>{port=server.address().port;origin=`http://127.0.0.1:${port}`;console.log(`ReplyMate: ${origin}`);process.parentPort?.postMessage({type:'ready',origin});});
 for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>{void close().finally(()=>process.exit());});

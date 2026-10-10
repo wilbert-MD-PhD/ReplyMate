@@ -68,6 +68,33 @@ test('settings transactions, independent page sessions and process recovery',asy
    const recovered=await status('page-a');assert.equal(recovered.configured,true);assert.equal(recovered.auth.signedIn,true);
    const answer=await(await post('/api/answer',{question:'After reconnect?',client:'page-a'})).text();assert.match(answer,/event: done/);assert.doesNotMatch(answer,/event: error/);
   });
+  await t.test('closing a page prevents import from rewarming its historical threads',async()=>{
+   await until(async()=>(await status('page-b')).warmup.state==='ready');
+   const unauthorized=await fetch(origin+'/api/session/close',{method:'POST',headers:{...headers,'X-Session-Token':'invalid'},body:JSON.stringify({client:'page-a'})});assert.equal(unauthorized.status,403);
+   for(const client of ['page-b','page-b','unknown'])assert.equal((await post('/api/session/close',{client})).status,200);
+   const warmCount=async()=>(await rpc()).filter(m=>m.method==='turn/start'&&m.params.input[0].text.startsWith('[WARMUP]')).length;
+   const before=await warmCount();
+   const library={version:'long-evidence',context:'Calibration notes.',terms:[],sources:[{id:'notes',name:'Calibration'}],chunks:[{id:'cobalt',sourceId:'notes',title:'Cobalt calibration coefficient',text:'Background information. '.repeat(130)+'Cobalt calibration coefficient is 17.42.'}],faq:[]};
+   const imported=await fetch(origin+'/api/library/import',{method:'POST',headers:{...headers,'X-File-Name':'notes.json'},body:JSON.stringify(library)});assert.equal(imported.status,200,await imported.text());
+   await until(async()=>(await status('page-a')).warmup.state==='ready');
+   assert.equal(await warmCount()-before,3);
+   const answer=await(await post('/api/answer',{question:'What is the Cobalt calibration coefficient?',client:'page-a'})).text();assert.match(answer,/event: done/);
+   const prompt=(await rpc()).filter(m=>m.method==='turn/start').at(-1).params.input[0].text;
+   assert.match(prompt,/coefficient is 17\.42\./);
+   const thread=answer.match(/from ([\w-]+), turn/)[1];
+   assert.equal((await post('/api/session/close',{client:'page-a'})).status,200);
+   const closed=await warmCount();const settings=await post('/api/settings',{language:'en'});assert.equal(settings.status,200);
+   await delay(150);assert.equal(await warmCount(),closed);
+   await until(async()=>(await status('page-a')).warmup.state==='ready');assert.equal(await warmCount()-closed,3);
+   const reopened=await(await post('/api/answer',{question:'Reopened page?',client:'page-a'})).text();assert.match(reopened,/event: done/);assert.notEqual(reopened.match(/from ([\w-]+), turn/)[1],thread);
+  });
+  await t.test('closing a page interrupts its ongoing model turn',async()=>{
+   const answer=await post('/api/answer',{question:'[TEST_HOLD]',client:'page-a'});assert.equal(answer.status,200);
+   const turn=await until(async()=>(await rpc()).find(m=>m.method==='turn/start'&&m.params.input[0].text.endsWith('[TEST_HOLD]')));
+   assert.equal((await post('/api/session/close',{client:'page-a'})).status,200);
+   assert.match(await answer.text(),/event: error/);
+   await until(async()=>(await rpc()).some(m=>m.method==='turn/interrupt'&&m.params.threadId===turn.params.threadId&&m.params.turnId===turn.result.turn.id));
+  });
  }finally{
   if(child.exitCode===null){const exited=once(child,'exit');child.kill();await exited;}await rm(dir,{recursive:true,force:true});
  }

@@ -28,6 +28,8 @@ export const releaseFiles=[
  'plugins/docs-office/index.mjs',
  'plugins/docs-pdf/index.mjs',
  'src/warmup.mjs',
+ 'src/page-sessions.mjs',
+ 'test/page-sessions.test.mjs',
  'public/components-ui.mjs',
  'public/speech-config.mjs',
  'scripts/build-components.mjs',

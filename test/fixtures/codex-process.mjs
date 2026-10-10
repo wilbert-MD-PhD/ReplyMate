@@ -22,7 +22,7 @@ if(!process.argv.includes('--mock-codex')){
    const text=m.params.input[0].text;if(text.includes('[TEST_CRASH]'))process.exit(1);
    const tid='turn-'+(++seq),threadId=m.params.threadId;result={turn:{id:tid}};
    const count=(turns.get(threadId)||0)+1;turns.set(threadId,count);
-   setTimeout(()=>{send({method:'turn/started',params:{threadId,turn:{id:tid}}});send({method:'item/agentMessage/delta',params:{threadId,delta:`Fixture answer from ${threadId}, turn ${count}.`}});send({method:'turn/completed',params:{threadId,turn:{id:tid,status:'completed'}}});},text.startsWith('[WARMUP]')?80:500);
+   if(!text.includes('[TEST_HOLD]'))setTimeout(()=>{send({method:'turn/started',params:{threadId,turn:{id:tid}}});send({method:'item/agentMessage/delta',params:{threadId,delta:`Fixture answer from ${threadId}, turn ${count}.`}});send({method:'turn/completed',params:{threadId,turn:{id:tid,status:'completed'}}});},text.startsWith('[WARMUP]')?80:500);
   }
   appendFileSync(process.env.REPLYMATE_TEST_LOG,JSON.stringify({method:m.method,params:m.params,result})+'\n');
   send({id:m.id,result});
