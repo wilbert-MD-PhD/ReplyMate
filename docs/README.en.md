@@ -6,15 +6,15 @@
 
 See a quick answer first, with an independent deep answer to follow. ReplyMate supports speech input, translates questions into Chinese and lets you revisit earlier Q&A. The interface is in Chinese; answers default to English.
 
-[Download v2.5.3](#download) · [Quick start](#quick-start) · [中文说明](../README.md) · [Release notes](https://github.com/wilbert-MD-PhD/ReplyMate/releases/tag/v2.5.3)
+[Download v2.5.4](#download) · [Quick start](#quick-start) · [中文说明](../README.md) · [Release notes](https://github.com/wilbert-MD-PhD/ReplyMate/releases/tag/v2.5.4)
 
 ## Download
 
-| Your computer | v2.5.3 installer |
+| Your computer | v2.5.4 installer |
 | --- | --- |
-| Mac with Apple silicon (M series) | [macOS Apple silicon](https://github.com/wilbert-MD-PhD/ReplyMate/releases/download/v2.5.3/ReplyMate-2.5.3-macOS-arm64.dmg) |
-| Mac with an Intel processor | [macOS Intel](https://github.com/wilbert-MD-PhD/ReplyMate/releases/download/v2.5.3/ReplyMate-2.5.3-macOS-x64.dmg) |
-| Windows on Intel / AMD 64-bit | [Windows installer](https://github.com/wilbert-MD-PhD/ReplyMate/releases/download/v2.5.3/ReplyMate-2.5.3-Windows-x64-Setup.exe) |
+| Mac with Apple silicon (M series) | [macOS Apple silicon](https://github.com/wilbert-MD-PhD/ReplyMate/releases/download/v2.5.4/ReplyMate-2.5.4-macOS-arm64.dmg) |
+| Mac with an Intel processor | [macOS Intel](https://github.com/wilbert-MD-PhD/ReplyMate/releases/download/v2.5.4/ReplyMate-2.5.4-macOS-x64.dmg) |
+| Windows on Intel / AMD 64-bit | [Windows installer](https://github.com/wilbert-MD-PhD/ReplyMate/releases/download/v2.5.4/ReplyMate-2.5.4-Windows-x64-Setup.exe) |
 
 The links above download the core app; see the release page for exact sizes. AI, document parsing and local speech components download separately when you install them. The app shows each download size. [All releases and older installers](https://github.com/wilbert-MD-PhD/ReplyMate/releases).
 

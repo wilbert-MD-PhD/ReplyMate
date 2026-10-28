@@ -6,15 +6,15 @@
 
 快速回答先显示，深度回答独立补充。支持语音输入，可将问题译成中文，并支持问答回看。界面为中文，回答默认使用英文。
 
-[下载 v2.5.3](#下载) · [快速开始](#快速开始) · [English](docs/README.en.md) · [更新说明](https://github.com/wilbert-MD-PhD/ReplyMate/releases/tag/v2.5.3)
+[下载 v2.5.4](#下载) · [快速开始](#快速开始) · [English](docs/README.en.md) · [更新说明](https://github.com/wilbert-MD-PhD/ReplyMate/releases/tag/v2.5.4)
 
 ## 下载
 
-| 你的电脑 | v2.5.3 安装包 |
+| 你的电脑 | v2.5.4 安装包 |
 | --- | --- |
-| Mac，Apple 芯片（M 系列） | [macOS Apple 芯片版](https://github.com/wilbert-MD-PhD/ReplyMate/releases/download/v2.5.3/ReplyMate-2.5.3-macOS-arm64.dmg) |
-| Mac，Intel 芯片 | [macOS Intel 版](https://github.com/wilbert-MD-PhD/ReplyMate/releases/download/v2.5.3/ReplyMate-2.5.3-macOS-x64.dmg) |
-| Windows，Intel / AMD 64 位 | [Windows 安装版](https://github.com/wilbert-MD-PhD/ReplyMate/releases/download/v2.5.3/ReplyMate-2.5.3-Windows-x64-Setup.exe) |
+| Mac，Apple 芯片（M 系列） | [macOS Apple 芯片版](https://github.com/wilbert-MD-PhD/ReplyMate/releases/download/v2.5.4/ReplyMate-2.5.4-macOS-arm64.dmg) |
+| Mac，Intel 芯片 | [macOS Intel 版](https://github.com/wilbert-MD-PhD/ReplyMate/releases/download/v2.5.4/ReplyMate-2.5.4-macOS-x64.dmg) |
+| Windows，Intel / AMD 64 位 | [Windows 安装版](https://github.com/wilbert-MD-PhD/ReplyMate/releases/download/v2.5.4/ReplyMate-2.5.4-Windows-x64-Setup.exe) |
 
 表中链接为主程序，实际下载大小见发布页。AI、文档解析和本地语音组件按需下载，软件内会显示下载量。[所有版本与历史安装包](https://github.com/wilbert-MD-PhD/ReplyMate/releases)。
 

@@ -4,10 +4,11 @@ export class CaptureSession {
  reset(){this.frames=[];this.text='';this.final=false;this.confidence=null;this.started=null;this.lastVoice=null;this.lastText=null;this.voiceMs=0;this.rate=48000;}
  push({pcm,rate,rms},time=this.now()){
   this.rate=rate;const duration=1000*pcm.length/rate;
-  this.noise.push(rms);if(this.noise.length>40)this.noise.shift();
   const floor=[...this.noise].sort((a,b)=>a-b)[Math.floor(this.noise.length*.2)]||0;
   const gate=Math.max(.002,Math.min(this.threshold(),floor*2.5),floor*1.7);
   const voice=rms>gate;
+  // Speech must not become the noise baseline while an utterance is in progress.
+  if(!voice){this.noise.push(rms);if(this.noise.length>40)this.noise.shift();}
   if(voice){if(this.started===null){this.started=time-duration;this.frames=this.pre.map(p=>p.pcm);}this.lastVoice=time;this.voiceMs+=duration;}
   if(this.started!==null){this.frames.push(pcm);if(this.frames.length>850)this.frames.shift();}
   this.pre.push({pcm,ms:duration});let preMs=this.pre.reduce((s,p)=>s+p.ms,0);while(preMs>1200&&this.pre.length>1)preMs-=this.pre.shift().ms;

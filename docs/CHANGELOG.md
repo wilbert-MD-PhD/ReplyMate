@@ -1,6 +1,9 @@
 # Changelog
 
-## Unreleased
+## 2.5.4 — 2026-10-28
+
+- Keep speech out of the ambient noise baseline to avoid prematurely splitting sustained speech.
+- Restart downloads when a complete cached component fails its SHA-256 check.
 
 - Preserve signs, decimal points, comparison operators and word boundaries when matching reviewed prepared answers.
 - Select relevant windows inside long reference chunks and share the excerpt budget across all selected sources.

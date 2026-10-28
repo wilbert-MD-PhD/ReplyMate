@@ -42,6 +42,7 @@ export const releaseFiles=[
  'docs/release-v2.5.1.md',
  'docs/release-v2.5.2.md',
  'docs/release-v2.5.3.md',
+ 'docs/release-v2.5.4.md',
  'test/recovery.test.mjs',
  'test/fixtures/codex-process.mjs',
  'docs/components.md',

@@ -42,7 +42,7 @@ export class ComponentManager{
  partial(e){return path.join(this.downloads,e.id+'-'+e.sha256.slice(0,16)+'.part');}
  async download(e,task,signal){
   const file=this.partial(e),metaFile=file+'.json';let offset=0;try{offset=(await stat(file)).size;}catch{}const meta=await readJSON(metaFile,{});
-  if(offset===e.bytes&&await sha256(file)===e.sha256)return file;
+  if(offset===e.bytes){if(await sha256(file)===e.sha256)return file;offset=0;await rm(file,{force:true});}
   if(offset>e.bytes||meta.url!==e.url||meta.sha256!==e.sha256){offset=0;await rm(file,{force:true});}
   if(!e.url||new URL(e.url).protocol!=='https:')throw error('此组件尚未发布下载，请使用手动导入');
   task.state='downloading';task.downloaded=offset;task.total=e.bytes;await this.saveTasks();
