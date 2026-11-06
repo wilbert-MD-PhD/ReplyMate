@@ -10,6 +10,11 @@ export function transcriptDecision(browser,local,{confidence=null,localConfidenc
  // A warning is visible and accompanies the model input; it must not replace a usable answer.
  return {text,clarify:false,needsReview:unclear||disagreement||!!(confidence!==null&&confidence<.55)||!!(localConfidence!==null&&localConfidence<.55),reason:unclear?'部分词未听清，已交给答题模型结合原问题判断':disagreement?'转写存在差异，原文可展开查看':verified?'本地转写完成':'浏览器转写',alternatives:[browser,local].filter((x,i,a)=>x&&!repeatedTranscript(x)&&a.indexOf(x)===i)};
 }
+// Reuse the completed fast lane only when the queued deep retry starts.
+export function reuseFastAnswer(target,source){
+ for(const key of ['text','model','effort','firstMs','e2e','goalMs','preparedDisplayMs','sources','kind','error','referenceVersion'])target[key]=source[key];
+ return source.state;
+}
 // Queue and selection are independent. Every callback owns an immutable attempt ID.
 export class QuestionStore{
  constructor(){this.items=[];this.jobs=[];this.running=null;this.selected=null;this.follow=true;this.holdUntil=0;this.seq=0;}

@@ -5,7 +5,7 @@ export class CaptureSession {
  push({pcm,rate,rms},time=this.now()){
   this.rate=rate;const duration=1000*pcm.length/rate;
   const floor=[...this.noise].sort((a,b)=>a-b)[Math.floor(this.noise.length*.2)]||0;
-  const gate=Math.max(.002,Math.min(this.threshold(),floor*2.5),floor*1.7);
+  const gate=Math.max(.002,this.threshold(),floor*1.7);
   const voice=rms>gate;
   // Speech must not become the noise baseline while an utterance is in progress.
   if(!voice){this.noise.push(rms);if(this.noise.length>40)this.noise.shift();}

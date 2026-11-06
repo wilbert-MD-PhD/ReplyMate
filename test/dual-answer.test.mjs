@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {AnswerLanes} from '../public/answer-lanes.mjs';
-import {QuestionStore} from '../public/logic.mjs';
+import {QuestionStore,reuseFastAnswer} from '../public/logic.mjs';
 import {CodexBridge} from '../src/bridge.mjs';
 const deferred=()=>{let resolve;const promise=new Promise(r=>resolve=r);return {promise,resolve};};
 
@@ -25,6 +25,16 @@ test('cancelling one question cancels its queued companion without losing the ne
 test('failed deep answer request releases its lane for the next question',async()=>{
  const lanes=new AnswerLanes();await assert.rejects(lanes.enqueue('secondary','q1',()=>{throw Error('offline');}));
  assert.equal(await lanes.enqueue('secondary','q2',()=>true),true);
+});
+test('deep retry reuses the final fast answer and preserves failure status',()=>{
+ for(const finalState of ['done','error','stopped']){
+  const store=new QuestionStore(),q=store.add('question'),{a:old}=store.next();
+  Object.assign(old,{text:'partial',model:'fast',referenceVersion:'v1'});
+  const retry=store.enqueue(q.id,old.question,{onlySecondary:true,fastSourceId:old.id});
+  old.text='complete answer';store.finish(q.id,old.id,{state:finalState,error:finalState==='error'?'failed':undefined});
+  store.next();const state=reuseFastAnswer(retry,q.attempts.find(a=>a.id===retry.fastSourceId));store.finish(q.id,retry.id,{state});
+  assert.equal(retry.text,'complete answer');assert.equal(retry.state,finalState);assert.equal(retry.referenceVersion,'v1');
+ }
 });
 test('auto-follow waits until both answers finish then starts reading hold',()=>{
  const s=new QuestionStore(),q1=s.add('first'),q2=s.add('second'),j=s.next();

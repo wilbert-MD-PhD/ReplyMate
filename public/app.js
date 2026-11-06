@@ -2,7 +2,7 @@ import {componentCenter} from './components-ui.mjs';
 import {speechBudget,browserLocales} from './speech-config.mjs';
 import {isLoginURL} from './auth-url.mjs';
 import {sessionFetch,setSessionToken} from './session-fetch.mjs';
-import {QuestionStore,normalize,hasQuestionContent} from './logic.mjs';
+import {QuestionStore,normalize,hasQuestionContent,reuseFastAnswer} from './logic.mjs';
 import {CaptureSession,BrowserTranscriber} from './capture.mjs';
 import {findPrepared,normalizePreparedQuestion} from './prepared.mjs';
 import {LibrarySync} from './library-sync.mjs';
@@ -66,9 +66,10 @@ async function pump(){if(pumping)return;pumping=true;
   try{
    const snapshot=await library.refresh();
    if(ac.signal.aborted)throw new DOMException('已停止','AbortError');
+   const fastState=a.onlySecondary?reuseFastAnswer(a,q.attempts.find(old=>old.id===a.fastSourceId)):null;
    if(a.onlySecondary&&a.referenceVersion!==snapshot.version)throw Error('资料已更新，请使用“两路重新回答”，避免混用新旧资料');
    a.referenceVersion=snapshot.version;startCompanions(q,a);render();
-   if(a.onlySecondary){store.finish(q.id,a.id);continue;}
+   if(a.onlySecondary){store.finish(q.id,a.id,{state:fastState});continue;}
    const hit=a.bypassCache?null:prepared(a.question);
    if(hit){a.text=hit.answer;a.kind='prepared';a.model='预设快答 · '+(hit.referenceVersion||'本地资料');a.sources=hit.sources;store.finish(q.id,a.id);requestAnimationFrame(()=>{a.preparedDisplayMs=performance.now()-q.meta.submittedAt;render();});continue;}
    if(!configured)throw Error('后端未连接，请检查配置后重启');
@@ -88,7 +89,7 @@ async function pump(){if(pumping)return;pumping=true;
  }}finally{pumping=false;render();}
 }
 function selected(){return store.items.find(q=>q.id===store.selected);}
-function retry(onlySecondary=false,correctedText=null){const q=selected();if(!q)return;const old=q.attempts.find(a=>a.id===versionId)||q.attempts.at(-1);const a=store.enqueue(q.id,correctedText||old.question,{bypassCache:true,submittedAt:performance.now(),corrected:correctedText!==null||old.corrected,model:$('model').value,deepModel:$('deepModel').value,onlySecondary});if(onlySecondary)Object.assign(a,{text:old.text,model:old.model,effort:old.effort,firstMs:old.firstMs,e2e:old.e2e,sources:old.sources,kind:old.kind,error:old.error,referenceVersion:old.referenceVersion});versionId=a.id;store.select(q.id);store.holdUntil=0;render();pump();}
+function retry(onlySecondary=false,correctedText=null){const q=selected();if(!q)return;const old=q.attempts.find(a=>a.id===versionId)||q.attempts.at(-1);const a=store.enqueue(q.id,correctedText||old.question,{bypassCache:true,submittedAt:performance.now(),corrected:correctedText!==null||old.corrected,model:$('model').value,deepModel:$('deepModel').value,onlySecondary,fastSourceId:onlySecondary?old.id:undefined});versionId=a.id;store.select(q.id);store.holdUntil=0;render();pump();}
 
 function render(){
  store.tick(performance.now(),Number($('hold').value)*1000);

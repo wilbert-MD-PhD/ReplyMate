@@ -6,7 +6,7 @@ import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {compileText,validateLibrary,readLibrary} from '../src/library.mjs';
-import {selectExcerpts,readSSE} from '../src/core.mjs';
+import {retrieve,selectExcerpts,readSSE} from '../src/core.mjs';
 import {createPreparedIndex,findPrepared} from '../public/prepared.mjs';
 import {selectEffort} from '../src/bridge.mjs';
 const root=path.dirname(path.dirname(fileURLToPath(import.meta.url)));
@@ -58,6 +58,13 @@ test('all three selected chunks retain their relevant windows within the shared 
  for(let i=0;i<3;i++){assert.ok(excerpt.includes(`[source-${i}]`));assert.ok(excerpt.includes(`coefficient is ${17+i}.42.`));}
  const short={id:'short',title:'Cobalt calibration coefficient',text:'Cobalt calibration coefficient is 2.'};
  assert.equal(selectExcerpts('Cobalt calibration coefficient',[short]),'[short] Cobalt calibration coefficient\n'+short.text);
+});
+test('single matching terms retrieve relevant chunks even when present throughout a small library',()=>{
+ const chunks=Array.from({length:8},(_,i)=>({id:String(i),title:'Notes',text:i%2?'biomarker finding '+i:'unrelated information'}));
+ const result=retrieve('biomarker',chunks);
+ assert.equal(result.length,3);assert.ok(result.every(c=>c.text.includes('biomarker')));
+ assert.equal(retrieve('absent',chunks).length,0);
+ assert.match(selectExcerpts('biomarker',chunks),/biomarker finding/);
 });
 test('invalid source references and conflicting aliases fail closed',()=>{
  const r=structuredClone(example);r.faq[0].sourceIds=['missing'];assert.throws(()=>validateLibrary(r),/unknown FAQ source/);

@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.5.5 — 2026-11-06
+
+- Retrieve matching reference passages even when a single term has a low relevance score.
+- Preserve the completed fast answer and its status when retrying the deep answer during streaming.
+- Apply the selected microphone volume threshold in quiet environments.
+
 ## 2.5.4 — 2026-10-28
 
 - Keep speech out of the ambient noise baseline to avoid prematurely splitting sustained speech.

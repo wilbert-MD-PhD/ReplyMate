@@ -11,7 +11,7 @@ export function prepareRetrieval(chunks){
 }
 export function retrieve(question,chunks){
  const ts=tokens(question),{docs,idf}=prepareRetrieval(chunks);
- return docs.map(d=>({c:d.c,score:ts.reduce((sum,t)=>sum+(d.terms.has(t)?(idf.get(t)||0)*(d.title.has(t)?1.8:1):0),0)*(d.c.priority||1)})).filter(d=>d.score>1).sort((a,b)=>b.score-a.score).slice(0,3).map(d=>d.c);
+ return docs.map(d=>({c:d.c,score:ts.reduce((sum,t)=>sum+(d.terms.has(t)?(idf.get(t)||0)*(d.title.has(t)?1.8:1):0),0)*(d.c.priority||1)})).filter(d=>d.score>0).sort((a,b)=>b.score-a.score).slice(0,3).map(d=>d.c);
 }
 function relevantWindow(text,query,idf,width){
  if(text.length<=width)return text;
