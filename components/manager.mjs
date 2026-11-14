@@ -1,4 +1,4 @@
-import {createReadStream} from 'node:fs';
+import {createReadStream,statSync} from 'node:fs';
 import {mkdir,stat,statfs,open,readFile,rm,rename,readdir,lstat} from 'node:fs/promises';
 import {createHash,randomUUID} from 'node:crypto';
 import path from 'node:path';
@@ -18,7 +18,7 @@ export class ComponentManager{
  compatible(e){if(e.unavailable)throw error(e.unavailable);if(e.platform!=='any'&&e.platform!==platform)throw error('组件平台或架构不兼容');if(e.protocol!==1||semver(e.minApp)>semver(appVersion))throw error('请先更新主程序以使用此组件');if(e.nodeMin&&Number(process.versions.node.split('.')[0])<e.nodeMin)throw error('组件需要更新的 Node 运行时');if(!/^[a-f0-9]{64}$/.test(e.sha256)||!Number.isSafeInteger(e.bytes)||e.bytes<=0||!Number.isSafeInteger(e.unpackedBytes)||e.unpackedBytes<=0)throw error('组件目录缺少可信校验信息');safeRelative(e.id);safeRelative(e.entry);}
  directory(id,record=this.state.installed[id]){if(!record)return null;safeRelative(record.folder);return path.join(this.dir,this.entry(id).kind==='model'?'models':'components',id,record.folder);}
  entryPath(id){return path.join(this.directory(id),safeRelative(this.entry(id).entry));}
- installed(id){const r=this.state.installed[id],e=this.entry(id);return !!r&&r.sha256===e.sha256;}
+ installed(id){const r=this.state.installed[id],e=this.entry(id);if(!r||r.sha256!==e.sha256)return false;try{return statSync(this.entryPath(id)).isFile();}catch{return false;}}
  async snapshot(){
   const entries=[];for(const e of this.catalog){const r=this.state.installed[e.id];let state=r?'installed':'missing';if(r){try{await stat(this.entryPath(e.id));}catch{state='damaged';}}
    entries.push({...e,state,installedVersion:r?.version,installedBytes:r?.bytes||0,missingDependencies:(e.dependencies||[]).filter(id=>!this.state.installed[id])});}
@@ -32,7 +32,7 @@ export class ComponentManager{
   try{this.state=await readJSON(path.join(this.dir,'component-state.json'),{installed:{}});}catch(e){await rm(file,{force:true});throw e;}
   this.busy=true;return async()=>{this.busy=false;await rm(file,{force:true});};
  }
- async start(id,options={}){const plan=this.plan(id,options),unlock=await this.lock();const task={id:randomUUID(),component:id,state:'queued',downloaded:0,total:plan.downloadBytes,items:plan.entries.map(e=>e.id),completed:[],created:Date.now()};this.tasks.set(task.id,task);void this.run(task,unlock).catch(e=>{task.state='error';task.error=e.message;});return task;}
+ async start(id,options={}){const unlock=await this.lock();let plan;try{plan=this.plan(id,options);}catch(e){await unlock();throw e;}const task={id:randomUUID(),component:id,state:'queued',downloaded:0,total:plan.downloadBytes,items:plan.entries.map(e=>e.id),completed:[],created:Date.now()};this.tasks.set(task.id,task);void this.run(task,unlock).catch(e=>{task.state='error';task.error=e.message;});return task;}
  async resume(taskId){const task=this.tasks.get(taskId);if(!task||!['paused','error'].includes(task.state))throw error('此任务不可恢复');const unlock=await this.lock();task.error=null;void this.run(task,unlock).catch(e=>{task.state='error';task.error=e.message;});return task;}
  async run(task,unlock){const controller=new AbortController();this.controller=controller;this.current=task;task.intent=null;
   try{task.completed||=[];for(const id of task.items){if(task.completed.includes(id)&&this.installed(id))continue;controller.signal.throwIfAborted();const e=this.entry(id);this.compatible(e);task.current=id;await this.space(e);const file=await this.download(e,task,controller.signal);await this.installFile(e,file,task,controller.signal);task.completed.push(id);await this.saveTasks();}task.state='done';task.error=null;

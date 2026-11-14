@@ -34,7 +34,11 @@ export function compileText(text,name='notes.txt'){
  const chunks=[];let title='Presentation notes';
  for(const paragraph of text.split(/\n\s*\n/)){
   const heading=paragraph.match(/^#{1,6}\s+(.+)/);if(heading)title=heading[1];
-  for(let i=0;i<paragraph.length;i+=1800)chunks.push({id:'note-'+(chunks.length+1),sourceId:'notes',source:name,title,text:paragraph.slice(i,i+1800)});
+  // Overlap windows so terms and their context survive a boundary between chunks.
+  for(let i=0;i<paragraph.length;i+=1600){
+   chunks.push({id:'note-'+(chunks.length+1),sourceId:'notes',source:name,title,overlap:200,text:paragraph.slice(i,i+1800)});
+   if(i+1800>=paragraph.length)break;
+  }
  }
  return validateLibrary({version:'custom',contextIndexed:true,context:text.slice(0,12000),terms:[],sources:[{id:'notes',name,sha256:createHash('sha256').update(text).digest('hex')}],chunks,faq:[]});
 }

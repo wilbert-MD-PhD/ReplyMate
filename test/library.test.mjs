@@ -66,6 +66,16 @@ test('single matching terms retrieve relevant chunks even when present throughou
  assert.equal(retrieve('absent',chunks).length,0);
  assert.match(selectExcerpts('biomarker',chunks),/biomarker finding/);
 });
+test('new and existing imports retrieve terms split across old chunk boundaries',()=>{
+ const text='filler '.repeat(2056)+'xxx biomarker survival benefit was 37 percent.';
+ const library=compileText(text,'study.txt');
+ assert.equal(library.context.includes('biomarker'),false);
+ assert.match(selectExcerpts('biomarker',library.chunks),/biomarker survival benefit was 37 percent/);
+ const old=[];for(let i=0;i<text.length;i+=1800)old.push({id:String(i),sourceId:'s',source:'study.txt',title:'Notes',text:text.slice(i,i+1800)});
+ assert.match(selectExcerpts('biomarker',old),/biomarker survival benefit was 37 percent/);
+ const other=old.map((c,i)=>i===old.length-1?{...c,sourceId:'other'}:c);
+ assert.equal(retrieve('biomarker',other).length,0);
+});
 test('invalid source references and conflicting aliases fail closed',()=>{
  const r=structuredClone(example);r.faq[0].sourceIds=['missing'];assert.throws(()=>validateLibrary(r),/unknown FAQ source/);
  const c=structuredClone(example);c.faq[1].aliases=[c.faq[0].question];assert.throws(()=>validateLibrary(c),/冲突/);

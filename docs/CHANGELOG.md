@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.5.6 — 2026-11-14
+
+- Preserve retrieval across text chunk boundaries, including existing imported libraries.
+- Include missing component dependencies in installation and repair plans.
+- Preserve mathematical symbols and word boundaries when suppressing duplicate voice questions.
+
 ## 2.5.5 — 2026-11-06
 
 - Retrieve matching reference passages even when a single term has a low relevance score.

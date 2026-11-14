@@ -5,7 +5,14 @@ const tokens=s=>[...new Set([...segmenter.segment(s.normalize('NFKC').toLocaleLo
 const indexes=new WeakMap();
 export function prepareRetrieval(chunks){
  if(indexes.has(chunks))return indexes.get(chunks);
- const docs=chunks.map(c=>({c,title:new Set(tokens(c.title)),terms:new Set(tokens(c.title+' '+c.text+' '+(c.keywords||'')))}));
+ const docs=chunks.map((original,i)=>{
+  const next=chunks[i+1];
+  // Older text imports used adjacent 1800-character slices without overlap.
+  // Reconstruct their boundary in memory, without rewriting the user's library.
+  const legacy=!original.overlap&&original.text.length===1800&&next&&original.sourceId&&original.sourceId===next.sourceId&&original.source===next.source&&original.title===next.title;
+  const c=legacy?{...original,text:original.text+next.text.slice(0,200)}:original;
+  return {c,title:new Set(tokens(c.title)),terms:new Set(tokens(c.title+' '+c.text+' '+(c.keywords||'')))};
+ });
  const frequency=new Map();for(const d of docs)for(const term of d.terms)frequency.set(term,(frequency.get(term)||0)+1);
  const index={docs,idf:new Map([...frequency].map(([t,n])=>[t,Math.log(1+docs.length/(1+n))]))};indexes.set(chunks,index);return index;
 }

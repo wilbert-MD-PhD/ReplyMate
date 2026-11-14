@@ -2,7 +2,7 @@ import {componentCenter} from './components-ui.mjs';
 import {speechBudget,browserLocales} from './speech-config.mjs';
 import {isLoginURL} from './auth-url.mjs';
 import {sessionFetch,setSessionToken} from './session-fetch.mjs';
-import {QuestionStore,normalize,hasQuestionContent,reuseFastAnswer} from './logic.mjs';
+import {QuestionStore,normalizeVoiceQuestion,hasQuestionContent,reuseFastAnswer} from './logic.mjs';
 import {CaptureSession,BrowserTranscriber} from './capture.mjs';
 import {findPrepared,normalizePreparedQuestion} from './prepared.mjs';
 import {LibrarySync} from './library-sync.mjs';
@@ -30,8 +30,8 @@ function prepared(question){return $('cache').checked&&library.snapshot?findPrep
 function submit(question,meta={}){
  question=question.trim();if(!question)return;
  // Limit ASR duplicate suppression to nearby utterances; allow a repeated question later.
- if(meta.voice&&normalize(question)===lastSubmitted&&performance.now()-lastSubmitTime<2500){if(meta.audioURL)URL.revokeObjectURL(meta.audioURL);return;}
- lastSubmitted=normalize(question);lastSubmitTime=performance.now();const q=store.add(question,{...meta,submittedAt:performance.now()});q.attempts[0].model=$('model').value;q.attempts[0].deepModel=$('deepModel').value;if(meta.manual){store.selected=q.id;store.follow=true;store.holdUntil=0;versionId=null;}render();pump();return q;
+ if(meta.voice&&normalizeVoiceQuestion(question)===lastSubmitted&&performance.now()-lastSubmitTime<2500){if(meta.audioURL)URL.revokeObjectURL(meta.audioURL);return;}
+ lastSubmitted=normalizeVoiceQuestion(question);lastSubmitTime=performance.now();const q=store.add(question,{...meta,submittedAt:performance.now()});q.attempts[0].model=$('model').value;q.attempts[0].deepModel=$('deepModel').value;if(meta.manual){store.selected=q.id;store.follow=true;store.holdUntil=0;versionId=null;}render();pump();return q;
 }
 const attemptKey=(q,a)=>q.id+':'+a.id;
 const previousQuestions=(q,referenceVersion)=>store.items.slice(0,store.items.indexOf(q)).filter(x=>x.attempts.at(-1).referenceVersion===referenceVersion).slice(-2).map(x=>x.attempts.at(-1).question);
