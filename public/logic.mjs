@@ -1,6 +1,10 @@
 export const normalize=t=>t.normalize('NFKC').toLocaleLowerCase().replace(/[^\p{L}\p{M}\p{N}]/gu,'');
 // Keep mathematical operators, signs, decimals and word boundaries when suppressing duplicates.
 export const normalizeVoiceQuestion=t=>t.normalize('NFKC').toLocaleLowerCase().replace(/\u2212/g,'-').replace(/[’‘]/g,"'").trim().replace(/[.!?。！？]+$/u,'').replace(/\s+/gu,' ').trim();
+// Only skip translation for visibly Chinese text; the microphone language is
+// not evidence of the language of a typed or edited question.
+export const isClearlyChinese=t=>/\p{Script=Han}/u.test(t)&&/^[\p{Script=Han}\p{N}\p{P}\p{Z}\s]+$/u.test(t);
+export const speechConfigurationChanged=(a,b)=>['language','speechMode','model','threads','useGPU'].some(key=>a?.[key]!==b?.[key]);
 export function cleanTranscript(t){return t.trim();}
 export function looksQuestion(t){if(/[^\p{Script=Latin}\p{N}\p{P}\p{Z}\s]/u.test(t))return true;return /^(?:(?:okay|ok|so|well|yes|thank you)[,. ]+)*(what|why|how|when|where|which|who|can|could|would|should|do|does|did|is|are|will|please|explain|describe|tell|have|has)\b|\b(could you|can you|would you|wondering|my question|i wonder|i want to ask)\b|\?/i.test(t);}
 export function transcriptDecision(browser,local,{confidence=null,localConfidence=null,verified=false}={}){

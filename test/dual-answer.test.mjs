@@ -1,9 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {AnswerLanes} from '../public/answer-lanes.mjs';
-import {QuestionStore,reuseFastAnswer} from '../public/logic.mjs';
+import {QuestionStore,reuseFastAnswer,isClearlyChinese,speechConfigurationChanged} from '../public/logic.mjs';
 import {CodexBridge} from '../src/bridge.mjs';
 const deferred=()=>{let resolve;const promise=new Promise(r=>resolve=r);return {promise,resolve};};
+test('only visibly Chinese questions bypass translation, independent of recognition settings',()=>{
+ assert.equal(isClearlyChinese('研究的局限是什么？'),true);
+ for(const q of ['What are the limitations?','研究的 limitations 是什么？','この研究の限界は？','123'])assert.equal(isClearlyChinese(q),false,q);
+});
+test('cross-page recording is interrupted only for relevant speech settings',()=>{
+ const initial={language:'zh',speechMode:'fast',model:'a',threads:4,useGPU:true,autoWarm:true};
+ assert.equal(speechConfigurationChanged(initial,{...initial,autoWarm:false}),false);
+ for(const [key,value] of [['language','en'],['speechMode','local'],['model','b'],['threads',8],['useGPU',false]])assert.equal(speechConfigurationChanged(initial,{...initial,[key]:value}),true,key);
+});
 
 test('slow deep answer does not block fast answers or translation; its own questions stay ordered',async()=>{
  const lanes=new AnswerLanes(),gate=deferred(),started=deferred(),events=[];

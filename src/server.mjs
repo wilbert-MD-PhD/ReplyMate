@@ -174,7 +174,9 @@ const server=http.createServer(async(req,res)=>{
    if(url.pathname==='/api/transcribe'){const ac=new AbortController();res.on('close',()=>ac.abort());const audio=await bytes(req,2880044);if(setupBusy)return json(res,409,{error:'正在更新设置，请稍后重试'});return json(res,200,await asr.transcribe(audio,req.headers['x-asr-quality']==='accurate'?'accurate':'fast',{signal:ac.signal,language:settings.value.language}));}
    if(!['/api/answer','/api/translate','/api/warm'].includes(url.pathname))return json(res,404,{error:'Not found'});
    await ready;if(startupError)throw Error(startupError);
-   const data=JSON.parse((await bytes(req,64000)).toString()||'{}');
+   // A valid request can contain three 8,000-character questions and two
+   // 4,000-character ASR alternatives, each potentially JSON-escaped.
+   const data=JSON.parse((await bytes(req,256000)).toString()||'{}');
    if(setupBusy)return json(res,409,{error:'正在更新账号或资料，请稍后重试'});
    if(!data||typeof data!=='object'||Array.isArray(data))throw Error('JSON object required');
    if(data.referenceVersion!==undefined&&data.referenceVersion!==reference.version)return json(res,409,{code:'REFERENCE_CHANGED',error:'资料已更新，请使用“两路重新回答”或重新提问'});

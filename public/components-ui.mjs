@@ -2,7 +2,7 @@ import {sessionFetch} from './session-fetch.mjs';
 const $=id=>document.getElementById(id),mb=n=>Number.isFinite(n)?(n/1e6).toFixed(1)+' MB':'待构建';
 const labels={queued:'等待下载',downloading:'下载中',paused:'已暂停',error:'失败，可恢复',verifying:'校验文件',extracting:'安装文件',checking:'组件自检',installed:'安装完成',done:'已完成',cancelled:'已取消',importing:'导入中'};
 export function componentCenter({post,notice,canSwitch,onChanged}){
- let snapshot,selectedImport=null,plan=null,lastDone='',dirty=false;
+ let snapshot,selectedImport=null,plan=null,lastDone='',dirty=false,lastSettings='';
  async function api(action,data={}){const r=await post('/api/components/'+action,data),d=await r.json();if(!r.ok)throw Error(d.error);return d;}
  function button(text,fn){const b=document.createElement('button');b.type='button';b.className='ghost';b.textContent=text;b.onclick=()=>Promise.resolve().then(fn).catch(e=>notice(e.message));return b;}
  async function refresh(){try{const r=await sessionFetch('/api/components');if(!r.ok)return;const next=await r.json();snapshot=next;render();const done=next.tasks.filter(x=>x.state==='done').map(x=>x.id).join(',');if(done!==lastDone){lastDone=done;await onChanged(next);}}catch(e){$('componentNotice').textContent='组件状态读取失败：'+e.message;}}
@@ -12,7 +12,9 @@ export function componentCenter({post,notice,canSwitch,onChanged}){
   $('languageHint').textContent=model?.englishOnly?'英语专用模型仅支持英语。其他语言需要安装多语言版本。':'同一多语言模型切换语言无需额外下载。可选语言不代表识别质量已经逐一验证。';
  }
  function render(){const {entries,tasks,settings,cacheBytes}=snapshot;
-  if(!$('localModel').options.length){$('localModel').replaceChildren(...entries.filter(e=>e.kind==='model').map(e=>new Option(e.name+' · '+mb(e.bytes),e.id)));$('localModel').value=settings.model;$('recognitionLanguage').value=settings.language;$('asrThreads').value=settings.threads;$('useGPU').checked=settings.useGPU;languageOptions();$('recognitionLanguage').value=settings.language;}
+  if(!$('localModel').options.length)$('localModel').replaceChildren(...entries.filter(e=>e.kind==='model').map(e=>new Option(e.name+' · '+mb(e.bytes),e.id)));
+  const settingsKey=JSON.stringify([settings.model,settings.language,settings.threads,settings.useGPU]);
+  if(!dirty&&settingsKey!==lastSettings){$('localModel').value=settings.model;$('recognitionLanguage').value=settings.language;$('asrThreads').value=settings.threads;$('useGPU').checked=settings.useGPU;languageOptions();$('recognitionLanguage').value=settings.language;lastSettings=settingsKey;}
   $('componentCards').replaceChildren(...entries.filter(e=>e.kind!=='model').map(e=>card(e)));
   $('installedModels').replaceChildren(...entries.filter(e=>e.kind==='model'&&e.state!=='missing').map(e=>card(e)));
   $('cacheSize').textContent=mb(cacheBytes);$('clearDownloadCache').disabled=snapshot.busy||!cacheBytes;
@@ -30,7 +32,8 @@ export function componentCenter({post,notice,canSwitch,onChanged}){
  $('installLocalModel').onclick=()=>prepare($('localModel').value).catch(e=>notice(e.message));
  $('importLocalModel').onclick=()=>{selectedImport=$('localModel').value;$('componentFile').click();};
  $('localModel').onchange=()=>{dirty=true;languageOptions();};$('recognitionLanguage').onchange=()=>{dirty=true;};$('languageSearch').oninput=languageOptions;
- $('applySpeechSettings').onclick=async()=>{if(!canSwitch()){notice('请先停止收音并等当前转写完成');return;}try{$('applySpeechSettings').disabled=true;$('componentNotice').textContent='正在应用设置，已安装模型会加载并执行短音频自检…';const r=await post('/api/settings',{model:$('localModel').value,language:$('recognitionLanguage').value,speechMode:$('speechMode').value,threads:Number($('asrThreads').value),useGPU:$('useGPU').checked}),d=await r.json();if(!r.ok)throw Error(d.error);dirty=false;$('componentNotice').textContent='设置已保存。'+(d.asr.state==='ready'?'本地语音已就绪。':'安装所选模型与引擎后即可使用本地转写。');await onChanged();await refresh();}catch(e){$('componentNotice').textContent=e.message;}finally{$('applySpeechSettings').disabled=false;}};
+ $('asrThreads').oninput=()=>{dirty=true;};$('useGPU').onchange=()=>{dirty=true;};
+ $('applySpeechSettings').onclick=async()=>{if(!canSwitch()){notice('请先停止收音并等当前转写完成');return;}try{$('applySpeechSettings').disabled=true;$('componentNotice').textContent='正在应用设置，已安装模型会加载并执行短音频自检…';const r=await post('/api/settings',{model:$('localModel').value,language:$('recognitionLanguage').value,speechMode:$('speechMode').value,threads:Number($('asrThreads').value),useGPU:$('useGPU').checked}),d=await r.json();if(!r.ok)throw Error(d.error);dirty=false;lastSettings='';$('componentNotice').textContent='设置已保存。'+(d.asr.state==='ready'?'本地语音已就绪。':'安装所选模型与引擎后即可使用本地转写。');await onChanged();await refresh();}catch(e){$('componentNotice').textContent=e.message;}finally{$('applySpeechSettings').disabled=false;}};
  $('componentFile').onchange=async()=>{const file=$('componentFile').files[0];if(!file||!selectedImport)return;try{$('componentNotice').textContent='正在导入、校验并自检，请稍候…';const r=await sessionFetch('/api/components/import',{method:'POST',headers:{'X-Component-Id':selectedImport},body:file}),d=await r.json();if(!r.ok)throw Error(d.error);$('componentNotice').textContent='导入完成，原文件已保留。';await refresh();await onChanged(snapshot);}catch(e){$('componentNotice').textContent=e.message;}finally{$('componentFile').value='';}};
  $('clearDownloadCache').onclick=()=>api('clear-cache').then(refresh).catch(e=>notice(e.message));
  setInterval(()=>{if(!$('componentsPanel').hidden||snapshot?.busy)void refresh();},1200);

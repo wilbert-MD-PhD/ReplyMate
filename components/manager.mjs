@@ -68,6 +68,12 @@ export class ComponentManager{
    await this.afterSwitch(e.id);task.state='installed';await rm(file,{force:true});await rm(file+'.json',{force:true});
   }catch(err){if(switched){if(previous)this.state.installed[e.id]=previous;else delete this.state.installed[e.id];await atomicJSON(path.join(this.dir,'component-state.json'),this.state);}if(prepared)await this.afterSwitch(e.id).catch(()=>{});await rm(dest,{recursive:true,force:true});throw err;
   }finally{await rm(stage,{recursive:true,force:true});}
+  // Only remove our own version directories after activation has committed.
+  // Keep both the active record and its rollback target; cleanup is best-effort.
+  const keep=new Set([this.state.installed[e.id]?.folder,this.state.installed[e.id]?.previous?.folder]);
+  try{for(const name of await readdir(parent,{withFileTypes:true})){
+   if(name.isDirectory()&&!keep.has(name.name)&&/^.+-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(name.name))await rm(path.join(parent,name.name),{recursive:true,force:true});
+  }}catch{} // A cleanup failure must never roll back a successfully activated component.
  }
  async importFile(id,stream){const e=this.entry(id);this.compatible(e);const unlock=await this.lock(),task={id:randomUUID(),component:id,current:id,items:[id],state:'importing',downloaded:0,total:e.bytes,created:Date.now()};this.tasks.set(task.id,task);const controller=new AbortController();this.controller=controller;this.current=task;
   try{await this.space(e);const file=this.partial(e),h=await open(file,'w',0o600);try{for await(const c of stream){controller.signal.throwIfAborted();task.downloaded+=c.length;if(task.downloaded>e.bytes)throw error('导入文件大小不匹配');await h.write(c);}}finally{await h.close();}await this.installFile(e,file,task,controller.signal);task.state='done';return task;

@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.5.7 — 2026-11-16
+
+- Remove orphaned component versions after successful repairs while retaining one rollback version.
+- Accept valid long multilingual questions and their context within a bounded request.
+- Translate typed questions according to their content rather than the speech recognition language.
+- Synchronize speech settings across pages and pause recording when another page changes them.
+
 ## 2.5.6 — 2026-11-14
 
 - Preserve retrieval across text chunk boundaries, including existing imported libraries.

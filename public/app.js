@@ -2,7 +2,7 @@ import {componentCenter} from './components-ui.mjs';
 import {speechBudget,browserLocales} from './speech-config.mjs';
 import {isLoginURL} from './auth-url.mjs';
 import {sessionFetch,setSessionToken} from './session-fetch.mjs';
-import {QuestionStore,normalizeVoiceQuestion,hasQuestionContent,reuseFastAnswer} from './logic.mjs';
+import {QuestionStore,normalizeVoiceQuestion,hasQuestionContent,reuseFastAnswer,isClearlyChinese,speechConfigurationChanged} from './logic.mjs';
 import {CaptureSession,BrowserTranscriber} from './capture.mjs';
 import {findPrepared,normalizePreparedQuestion} from './prepared.mjs';
 import {LibrarySync} from './library-sync.mjs';
@@ -57,7 +57,7 @@ function startCompanions(q,a){
  const prior=q.attempts.slice(0,-1).findLast(old=>old.question===a.question&&old.referenceVersion===a.referenceVersion&&old.translation?.state==='done');
  const known=library.snapshot?findPrepared(library.snapshot.index,a.question):null;
  if(known?.questionZh&&normalizePreparedQuestion(a.question)===normalizePreparedQuestion(known.question))a.translation={text:known.questionZh,state:'done',kind:'prepared'};
- else if((q.meta.language||speechSettings.language)==='zh')a.translation={text:a.question,state:'done',kind:'original'};
+ else if(isClearlyChinese(a.question))a.translation={text:a.question,state:'done',kind:'original'};
  else if(prior)a.translation={...prior.translation};
  else{a.translation={text:'',state:'queued'};launch('translation',a.translation,'/api/translate',{});}
 }
@@ -176,11 +176,14 @@ function stopListening(){listening=false;try{recognizer?.stop();}catch{}recogniz
 function showASR(asr){$('asrStatus').textContent=asr.state==='ready'?'本地 Whisper 已就绪':asr.state==='disabled'?'本地转写未启用，可使用浏览器转写或手动输入':'本地语音：'+(asr.error||'启动中');for(const opt of $('speechMode').options)if(opt.value!=='fast')opt.disabled=asr.state!=='ready';}
 function syncStatus(s){
  token=s.token;setSessionToken(token);configured=s.configured;backendMode=s.backend;aiInstalled=s.aiInstalled;
+ if(s.settings){
+  if(listening&&speechConfigurationChanged(speechSettings,s.settings)){stopListening();notice('语音设置已在其他页面更改，收音已暂停。请检查设置后重新开始。');}
+  speechSettings=s.settings;$('speechMode').value=speechSettings.speechMode||'fast';$('question').lang=speechSettings.language==='auto'?'':speechSettings.language;$('questionsOnly').disabled=speechSettings.language!=='en';
+ }
  $('connection').textContent=configured?(s.backend==='demo'?'离线演示 · 无 AI 生成':'Codex 已连接'):'连接失败';
  $('backendStatus').textContent=s.error||s.mode;showAccount(s.auth);showWarm(s.warmup);showASR(s.asr);
 }
 async function init(){try{const s=await(await fetch(statusURL)).json();syncStatus(s);
- speechSettings=s.settings||speechSettings;$('speechMode').value=speechSettings.speechMode||'fast';$('question').lang=speechSettings.language==='auto'?'':speechSettings.language;$('questionsOnly').disabled=speechSettings.language!=='en';
  $('model').replaceChildren(...s.models.map(m=>new Option('单模型 · '+m.id+' · '+m.effort,m.id)));if(s.raceModels.length>1)$('model').add(new Option('多模型竞速 · 首个返回者回答','race'),0);$('model').value=s.fastSelection;
  $('raceDescription').textContent=s.raceModels.length>1?'默认同时请求 '+s.raceModels.join('、')+'，首个非空正文返回后保留胜出者，停止其他竞速请求。':s.backend==='demo'?'离线演示仅用于体验界面。':'当前只有一个快速模型可用，暂不能竞速。';
  $('deepModel').replaceChildren(...s.models.map(m=>new Option(m.id+(m.id==='gpt-6-astra'?' · 最强模型优先':''),m.id)));if(!s.secondaryModel)$('deepModel').add(new Option('请选择深度回答模型',''),0);$('deepModel').value=s.secondaryModel;

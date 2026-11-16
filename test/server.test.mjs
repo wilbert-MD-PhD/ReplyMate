@@ -31,6 +31,11 @@ test('clean demo server: paired streams, session auth, private-file isolation an
    assert.match(texts[0],/event: done/);assert.match(texts[1],/event: done/);assert.match(texts[2],/这个项目有哪些局限/);assert.doesNotMatch(texts.join(''),/event: error/);
   });
   await t.test('input limits and unknown models fail before streaming',async()=>{for(const data of [{question:''},{question:'x'.repeat(8001)},{question:'Hello?',model:'unknown'}])assert.equal((await post('/api/answer',data)).status,400);});
+  await t.test('valid multilingual questions and escaped context fit within the request limit',async()=>{
+   const question='研究'.repeat(4000),previousQuestions=[question,question],alternatives=['\u0000'.repeat(4000),'\u0000'.repeat(4000)];
+   const r=await post('/api/answer',{question,previousQuestions,alternatives,client:'long-question'});assert.equal(r.status,200);assert.match(await r.text(),/event: done/);
+   const tooLarge=await post('/api/answer',{question:'ok',padding:'x'.repeat(256001)});assert.equal(tooLarge.status,400);
+  });
   await t.test('imports in the UI are authenticated, saved, applied live and retained after errors',async()=>{
    const send=(name,body,headers={})=>fetch(origin+'/api/library/import',{method:'POST',headers:{Origin:origin,'X-Session-Token':status.token,'X-File-Name':encodeURIComponent(name),...headers},body});
    assert.equal((await send('my.md','New reference',{'X-Session-Token':'wrong'})).status,403);
